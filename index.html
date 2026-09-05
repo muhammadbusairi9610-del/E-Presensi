@@ -41,7 +41,7 @@
       gap: 20px;
     }
 
-    /* Header Navigasi */
+    /* Header Navigasi Utama */
     header {
       background-color: var(--card-bg);
       padding: 20px;
@@ -71,7 +71,7 @@
       gap: 10px;
     }
 
-    /* Tombol Tampilan */
+    /* Tombol Navigasi & Aksi */
     .btn {
       padding: 10px 16px;
       border: none;
@@ -94,7 +94,7 @@
     .btn-outline { background-color: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
     .btn-outline:hover { background-color: var(--primary-color); color: white; }
 
-    /* Halaman & Grid */
+    /* Pengaturan Halaman SPA */
     .page-section { display: none; }
     .page-section.active { display: block; }
 
@@ -116,7 +116,7 @@
       margin-bottom: 20px;
     }
 
-    /* Area Kamera */
+    /* Area Kamera & Kotak Panduan */
     .camera-box {
       position: relative;
       width: 100%;
@@ -141,6 +141,7 @@
       pointer-events: none;
     }
 
+    /* Indikator Warna Hijau / Merah */
     .face-guide.success { border: 4px solid var(--success-color) !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); }
     .face-guide.failed { border: 4px solid var(--danger-color) !important; box-shadow: 0 0 20px rgba(231, 76, 60, 0.6); }
 
@@ -154,7 +155,7 @@
       color: var(--primary-color);
     }
 
-    /* Form Inputs */
+    /* Elemen Form Input */
     .form-group { margin-bottom: 12px; }
     label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.85rem; }
     input[type="date"], input[type="text"], select {
@@ -166,7 +167,7 @@
       box-sizing: border-box;
     }
 
-    /* Tabel Status */
+    /* Tabel Status Presensi */
     .attendance-table {
       width: 100%;
       border-collapse: collapse;
@@ -190,7 +191,7 @@
 <body>
 
 <div class="container">
-  <!-- HEADER & NAVIGASI -->
+  <!-- HEADER & TOMBOL NAVIGASI -->
   <header>
     <div class="brand">
       <h1>E-Presensi SMPN 1 Monta 🚀</h1>
@@ -202,10 +203,10 @@
     </div>
   </header>
 
-  <!-- halaman 1: BERANDA PRESENSI -->
+  <!-- HALAMAN 1: BERANDA PRESENSI -->
   <div id="pageBeranda" class="page-section active">
     <div class="main-content">
-      <!-- Pemindaian Kamera -->
+      <!-- Modul Pemindaian Kamera -->
       <div class="card">
         <h3>Pemindaian Wajah Real-time</h3>
         <div class="camera-box">
@@ -222,9 +223,11 @@
         </div>
       </div>
 
-      <!-- Form Pengaturan & Input Siswa -->
+      <!-- Form Pengaturan Kelas, Waktu & Input Nama Siswa -->
       <div class="card">
         <h3>Sesi Kelas & Enrollment Siswa</h3>
+        
+        <!-- Pilihan Kelas 7A-7F, 8A-8F, 9A-9F -->
         <div class="form-group">
           <label for="selectClass">Pilih Kelas:</label>
           <select id="selectClass">
@@ -246,6 +249,7 @@
           </select>
         </div>
 
+        <!-- System Waktu & Kalender -->
         <div class="form-group">
           <label for="sessionDate">Tanggal Sesi (DD-MM-YYYY):</label>
           <input type="date" id="sessionDate">
@@ -253,7 +257,8 @@
 
         <hr style="border:0; border-top: 1px solid #eee; margin: 15px 0;">
 
-        <h4>Input Siswa Manual / Izin Susulan</h4>
+        <!-- Menu Input Nama Siswa & Status Manual -->
+        <h4>Input Siswa Manual / Enrollment</h4>
         <div class="form-group">
           <label for="studentName">Nama Lengkap Siswa:</label>
           <input type="text" id="studentName" placeholder="Contoh: Budi Santoso">
@@ -288,7 +293,7 @@
         </div>
       </div>
 
-      <!-- Filter Periode Laporan -->
+      <!-- Filter Rentang Waktu & Kelas -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
         <div class="form-group">
           <label for="reportPeriod">Pilih Periode Laporan:</label>
@@ -310,7 +315,7 @@
         </div>
       </div>
 
-      <!-- Tabel Laporan Rekapitulasi -->
+      <!-- Tabel Data Rekapitulasi Presensi -->
       <table class="attendance-table" id="reportTable">
         <thead>
           <tr>
@@ -348,7 +353,7 @@
   const statusInstruction = document.getElementById('statusInstruction');
   const sessionDateInput = document.getElementById('sessionDate');
 
-  // 1. Perpindahan Halaman Beranda & Laporan
+  // 1. Logika Perpindahan Halaman (SPA Navigation)
   function switchPage(pageName) {
     document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
     if (pageName === 'beranda') {
@@ -358,24 +363,24 @@
     }
   }
 
-  // 2. Tanggal Otomatis Hari Ini
+  // 2. Penetapan Tanggal Otomatis
   function initTanggal() {
     const today = new Date();
     sessionDateInput.value = today.toISOString().split('T')[0];
   }
 
-  // 3. Akses Kamera
+  // 3. Menghubungkan Kamera Web
   async function setupKamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 300 } });
       video.srcObject = stream;
-      statusInstruction.innerText = "Kamera siap! Posisikan wajah di lingkaran.";
+      statusInstruction.innerText = "Kamera siap! Arahkan wajahmu ke dalam lingkaran.";
     } catch (err) {
       statusInstruction.innerText = "Akses kamera gagal/ditolak.";
     }
   }
 
-  // 4. Simulasi Pemindaian Wajah
+  // 4. Simulasi Scan Wajah (Indikator Hijau / Merah)
   function simulasiScan(isSuccess) {
     const kelas = document.getElementById('selectClass').value;
     if (isSuccess) {
@@ -389,11 +394,11 @@
 
     setTimeout(() => {
       faceGuide.className = "face-guide";
-      statusInstruction.innerText = "Posisikan wajah di lingkaran.";
+      statusInstruction.innerText = "Arahkan wajahmu ke dalam lingkaran.";
     }, 3000);
   }
 
-  // 5. Input Manual Presensi Siswa
+  // 5. Simpan Data Siswa Manual / Enrollment
   function simpanSiswaManual() {
     const nama = document.getElementById('studentName').value.trim();
     const kelas = document.getElementById('selectClass').value;
@@ -406,10 +411,10 @@
 
     tambahLogKehadiran(kelas, nama, status);
     document.getElementById('studentName').value = "";
-    alert(`Data ${nama} (${kelas}) dicatat sebagai [${status}]!`);
+    alert(`Data ${nama} (${kelas}) berhasil dicatat sebagai [${status}]!`);
   }
 
-  // 6. Penambahan Log ke Tabel
+  // 6. Menambahkan Baris Log Presensi
   function tambahLogKehadiran(kelas, nama, status) {
     const tableBody = document.getElementById('attendanceLogs');
     const rowCount = tableBody.rows.length + 1;
@@ -433,25 +438,24 @@
     tableBody.prepend(row);
   }
 
-  // 7. FUNGSI UNDUH EXCEL
+  // 7. Ekspor Laporan Ke Excel (Nama File: E-Presensi Kelas SMPN 1 Monta)
   function unduhExcel() {
     const period = document.getElementById('reportPeriod').value;
     const filename = `E-Presensi_Kelas_SMPN_1_Monta_${period}.xlsx`;
     
-    // Ambil Data dari Tabel
     const table = document.getElementById('reportTable');
     const wb = XLSX.utils.table_to_book(table, { sheet: "Rekap Presensi" });
     
     XLSX.writeFile(wb, filename);
   }
 
-  // 8. FUNGSI UNDUH PDF (Laporan Resmi Kesiswaan)
+  // 8. Ekspor Laporan Ke PDF Resmi Kesiswaan
   function unduhPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const period = document.getElementById('reportPeriod').value;
 
-    // Kops Surat SMPN 1 Monta
+    // Kop Surat SMPN 1 Monta
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text("PEMERINTAH KABUPATEN BIMA", 105, 15, null, null, "center");
@@ -460,9 +464,9 @@
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Periode Laporan: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 28, null, null, "center");
-    doc.line(14, 32, 196, 32); // Garis Pembatas
+    doc.line(14, 32, 196, 32);
 
-    // Generate Tabel dari DOM
+    // Buat Tabel dari Elemen HTML
     doc.autoTable({
       html: '#reportTable',
       startY: 36,
@@ -470,10 +474,10 @@
       styles: { fontSize: 9 }
     });
 
-    // Bagian Tanda Tangan Kesiswaan
+    // Pengesahan Wakasek Kesiswaan
     const finalY = doc.lastAutoTable.finalY + 15;
     doc.text("Mengetahui,", 140, finalY);
-    doc.text("Wakasekk Bagian Kesiswaan", 140, finalY + 6);
+    doc.text("Wakasek Bagian Kesiswaan", 140, finalY + 6);
     doc.text("( ________________________ )", 140, finalY + 28);
 
     doc.save(`E-Presensi_Kelas_SMPN_1_Monta_${period}.pdf`);
