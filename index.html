@@ -3,10 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Presensi Kelas SMP</title>
+  <title>E-Presensi Kelas SMPN 1 Monta</title>
+  
+  <!-- Pustaka Ekspor Excel & PDF -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     :root {
-      --primary-color: #3498db;
+      --primary-color: #1f497d;
+      --secondary-color: #3498db;
       --success-color: #2ecc71;
       --warning-color: #f39c12;
       --danger-color: #e74c3c;
@@ -34,25 +41,62 @@
       gap: 20px;
     }
 
+    /* Header Navigasi */
     header {
-      text-align: center;
       background-color: var(--card-bg);
       padding: 20px;
       border-radius: 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
-    h1 {
-      margin: 0 0 8px 0;
-      color: var(--primary-color);
-      font-size: 1.8rem;
-    }
-
-    p.subtitle {
+    .brand h1 {
       margin: 0;
-      color: #7f8c8d;
-      font-size: 0.95rem;
+      color: var(--primary-color);
+      font-size: 1.6rem;
     }
+
+    .brand p {
+      margin: 4px 0 0 0;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Tombol Tampilan */
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: #153256; }
+
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-success:hover { background-color: #27ae60; }
+
+    .btn-danger { background-color: var(--danger-color); color: white; }
+    .btn-danger:hover { background-color: #c0392b; }
+
+    .btn-outline { background-color: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+    .btn-outline:hover { background-color: var(--primary-color); color: white; }
+
+    /* Halaman & Grid */
+    .page-section { display: none; }
+    .page-section.active { display: block; }
 
     .main-content {
       display: grid;
@@ -61,9 +105,7 @@
     }
 
     @media (max-width: 768px) {
-      .main-content {
-        grid-template-columns: 1fr;
-      }
+      .main-content { grid-template-columns: 1fr; }
     }
 
     .card {
@@ -71,13 +113,14 @@
       padding: 20px;
       border-radius: 16px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
     }
 
     /* Area Kamera */
     .camera-box {
       position: relative;
       width: 100%;
-      height: 260px;
+      height: 250px;
       background-color: #000;
       border-radius: 12px;
       overflow: hidden;
@@ -86,85 +129,41 @@
       align-items: center;
     }
 
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    video { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Bounding Box Wajah (Bingkai Oval) */
     .face-guide {
       position: absolute;
-      width: 150px;
-      height: 190px;
-      border: 4px dashed var(--primary-color);
+      width: 140px;
+      height: 180px;
+      border: 4px dashed var(--secondary-color);
       border-radius: 50%;
-      box-sizing: border-box;
       transition: all 0.3s ease;
       pointer-events: none;
     }
 
-    .face-guide.success {
-      border: 4px solid var(--success-color) !important;
-      box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
-    }
+    .face-guide.success { border: 4px solid var(--success-color) !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); }
+    .face-guide.failed { border: 4px solid var(--danger-color) !important; box-shadow: 0 0 20px rgba(231, 76, 60, 0.6); }
 
-    .face-guide.failed {
-      border: 4px solid var(--danger-color) !important;
-      box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
-    }
-
-    /* Status Badge */
     .status-badge {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 10px;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
       background-color: #eef6fb;
       text-align: center;
       font-weight: 600;
       color: var(--primary-color);
     }
 
-    /* Form & Input Style */
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 6px;
-      font-size: 0.9rem;
-    }
-
-    input[type="date"], input[type="text"], select, button {
+    /* Form Inputs */
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.85rem; }
+    input[type="date"], input[type="text"], select {
       width: 100%;
-      padding: 10px 12px;
+      padding: 8px 12px;
       border: 1px solid #ccc;
       border-radius: 8px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       box-sizing: border-box;
-    }
-
-    button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      margin-top: 5px;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    .btn-danger {
-      background-color: var(--danger-color);
-    }
-    .btn-danger:hover {
-      background-color: #c0392b;
     }
 
     /* Tabel Status */
@@ -175,166 +174,171 @@
     }
 
     .attendance-table th, .attendance-table td {
-      padding: 8px 10px;
+      padding: 10px;
       text-align: left;
       border-bottom: 1px solid #eee;
       font-size: 0.85rem;
     }
 
+    .attendance-table th { background-color: #f8f9fa; color: var(--primary-color); }
     .badge-hadir { color: var(--success-color); font-weight: bold; }
     .badge-izin { color: var(--warning-color); font-weight: bold; }
-    .badge-sakit { color: var(--primary-color); font-weight: bold; }
+    .badge-sakit { color: var(--secondary-color); font-weight: bold; }
     .badge-alpa { color: var(--danger-color); font-weight: bold; }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 8px;
-      background-color: #e0e0e0;
-      color: #333;
-      border-radius: 6px;
-    }
-
-    .tab-btn.active {
-      background-color: var(--primary-color);
-      color: white;
-    }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <!-- HEADER & NAVIGASI -->
   <header>
-    <h1>E-Presensi Kelas SMP 🚀</h1>
-    <p class="subtitle">Sistem Presensi Digital Berbasis Pengenalan Wajah</p>
+    <div class="brand">
+      <h1>E-Presensi SMPN 1 Monta 🚀</h1>
+      <p>Sistem Pengenalan Wajah & Rekapitulasi Kesiswaan</p>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-outline" onclick="switchPage('beranda')">🏠 Beranda Presensi</button>
+      <button class="btn btn-primary" onclick="switchPage('laporan')">📊 Laporan & Rekapitulasi</button>
+    </div>
   </header>
 
-  <div class="main-content">
-    <!-- KOLOM LEFT: Kamera & Pendaftaran / Scan -->
-    <div class="card">
-      <h3>Pemindaian Wajah Real-time</h3>
-      <div class="camera-box">
-        <video id="videoFeed" autoplay muted playsinline></video>
-        <div id="faceGuide" class="face-guide"></div>
-      </div>
-      <div id="statusInstruction" class="status-badge">
-        Menyiapkan kamera...
-      </div>
+  <!-- halaman 1: BERANDA PRESENSI -->
+  <div id="pageBeranda" class="page-section active">
+    <div class="main-content">
+      <!-- Pemindaian Kamera -->
+      <div class="card">
+        <h3>Pemindaian Wajah Real-time</h3>
+        <div class="camera-box">
+          <video id="videoFeed" autoplay muted playsinline></video>
+          <div id="faceGuide" class="face-guide"></div>
+        </div>
+        <div id="statusInstruction" class="status-badge">
+          Menyiapkan kamera...
+        </div>
 
-      <!-- Tombol Simulasi untuk Pengujian -->
-      <div style="margin-top: 15px; display: flex; gap: 8px;">
-        <button onclick="simulasiScan(true)">Simulasi Sukses</button>
-        <button class="btn-danger" onclick="simulasiScan(false)">Simulasi Gagal</button>
-      </div>
-    </div>
-
-    <!-- KOLOM RIGHT: Pengaturan Kelas, Input Siswa & Sesi -->
-    <div class="card">
-      <h3>Pengaturan Sesi & Input Siswa</h3>
-
-      <!-- 1. Pilihan Kelas (7A - 9F) -->
-      <div class="form-group">
-        <label for="selectClass">Pilih Kelas:</label>
-        <select id="selectClass">
-          <optgroup label="Kelas 7">
-            <option value="7A">Kelas 7A</option>
-            <option value="7B">Kelas 7B</option>
-            <option value="7C">Kelas 7C</option>
-            <option value="7D">Kelas 7D</option>
-            <option value="7E">Kelas 7E</option>
-            <option value="7F">Kelas 7F</option>
-          </optgroup>
-          <optgroup label="Kelas 8">
-            <option value="8A">Kelas 8A</option>
-            <option value="8B">Kelas 8B</option>
-            <option value="8C">Kelas 8C</option>
-            <option value="8D">Kelas 8D</option>
-            <option value="8E">Kelas 8E</option>
-            <option value="8F">Kelas 8F</option>
-          </optgroup>
-          <optgroup label="Kelas 9">
-            <option value="9A">Kelas 9A</option>
-            <option value="9B">Kelas 9B</option>
-            <option value="9C">Kelas 9C</option>
-            <option value="9D">Kelas 9D</option>
-            <option value="9E">Kelas 9E</option>
-            <option value="9F">Kelas 9F</option>
-          </optgroup>
-        </select>
+        <div style="margin-top: 15px; display: flex; gap: 8px;">
+          <button class="btn btn-success" style="flex:1;" onclick="simulasiScan(true)">Simulasi Sukses</button>
+          <button class="btn btn-danger" style="flex:1;" onclick="simulasiScan(false)">Simulasi Gagal</button>
+        </div>
       </div>
 
-      <!-- 2. Pengaturan Tanggal -->
-      <div class="form-group">
-        <label for="sessionDate">Tanggal Sesi (DD-MM-YYYY):</label>
-        <input type="date" id="sessionDate">
+      <!-- Form Pengaturan & Input Siswa -->
+      <div class="card">
+        <h3>Sesi Kelas & Enrollment Siswa</h3>
+        <div class="form-group">
+          <label for="selectClass">Pilih Kelas:</label>
+          <select id="selectClass">
+            <optgroup label="Kelas 7">
+              <option value="7A">Kelas 7A</option><option value="7B">Kelas 7B</option>
+              <option value="7C">Kelas 7C</option><option value="7D">Kelas 7D</option>
+              <option value="7E">Kelas 7E</option><option value="7F">Kelas 7F</option>
+            </optgroup>
+            <optgroup label="Kelas 8">
+              <option value="8A">Kelas 8A</option><option value="8B">Kelas 8B</option>
+              <option value="8C">Kelas 8C</option><option value="8D">Kelas 8D</option>
+              <option value="8E">Kelas 8E</option><option value="8F">Kelas 8F</option>
+            </optgroup>
+            <optgroup label="Kelas 9">
+              <option value="9A">Kelas 9A</option><option value="9B">Kelas 9B</option>
+              <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
+              <option value="9E">Kelas 9E</option><option value="9F">Kelas 9F</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sessionDate">Tanggal Sesi (DD-MM-YYYY):</label>
+          <input type="date" id="sessionDate">
+        </div>
+
+        <hr style="border:0; border-top: 1px solid #eee; margin: 15px 0;">
+
+        <h4>Input Siswa Manual / Izin Susulan</h4>
+        <div class="form-group">
+          <label for="studentName">Nama Lengkap Siswa:</label>
+          <input type="text" id="studentName" placeholder="Contoh: Budi Santoso">
+        </div>
+
+        <div class="form-group">
+          <label for="manualStatus">Status Kehadiran:</label>
+          <select id="manualStatus">
+            <option value="Hadir">Hadir</option>
+            <option value="Izin">Izin</option>
+            <option value="Sakit">Sakit</option>
+            <option value="Alpa">Alpa</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%;" onclick="simpanSiswaManual()">Simpan Data Presensi</button>
       </div>
-
-      <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
-      <!-- 3. Menu Input/Pendaftaran Nama Siswa -->
-      <h4>Input / Enrollment Siswa Baru</h4>
-      <div class="form-group">
-        <label for="studentName">Nama Lengkap Siswa:</label>
-        <input type="text" id="studentName" placeholder="Contoh: Budi Santoso">
-      </div>
-
-      <div class="form-group">
-        <label for="manualStatus">Status Presensi Manual (Opsional):</label>
-        <select id="manualStatus">
-          <option value="Hadir">Hadir</option>
-          <option value="Izin">Izin</option>
-          <option value="Sakit">Sakit</option>
-          <option value="Alpa">Alpa</option>
-        </select>
-      </div>
-
-      <button onclick="simpanSiswaManual()">Simpan Presensi Manual / Mendaftarkan</button>
     </div>
   </div>
 
-  <!-- BAGIAN BAWAH: TABEL REKAPITULASI -->
-  <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h3 style="margin: 0;">Rekapitulasi Presensi Sesi Ini</h3>
-      <div style="width: 200px;">
-        <select id="filterPeriod" onchange="filterData()">
-          <option value="harian">Filter: Harian</option>
-          <option value="mingguan">Filter: Mingguan</option>
-          <option value="bulanan">Filter: Bulanan</option>
-          <option value="tahunan">Filter: Tahunan</option>
-        </select>
+  <!-- HALAMAN 2: MENU LAPORAN & REKAPITULASI (KESISWAAN) -->
+  <div id="pageLaporan" class="page-section">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+        <div>
+          <h2 style="margin:0; color: var(--primary-color);">Laporan Rekapitulasi Kesiswaan</h2>
+          <p style="margin: 4px 0 0 0; color: #7f8c8d; font-size: 0.85rem;">Laporan Resmi untuk Wakasek Bagian Kesiswaan SMPN 1 Monta</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-success" onclick="unduhExcel()">📥 Unduh Excel</button>
+          <button class="btn btn-danger" onclick="unduhPDF()">📄 Unduh PDF</button>
+        </div>
       </div>
-    </div>
 
-    <table class="attendance-table">
-      <thead>
-        <tr>
-          <th>Kelas</th>
-          <th>Nama Siswa</th>
-          <th>Waktu</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="attendanceLogs">
-        <tr>
-          <td>7A</td>
-          <td>Ahmad Dani</td>
-          <td>07:15</td>
-          <td class="badge-hadir">Hadir</td>
-        </tr>
-        <tr>
-          <td>7A</td>
-          <td>Citra Lestari</td>
-          <td>-</td>
-          <td class="badge-alpa">Alpa</td>
-        </tr>
-      </tbody>
-    </table>
+      <!-- Filter Periode Laporan -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+        <div class="form-group">
+          <label for="reportPeriod">Pilih Periode Laporan:</label>
+          <select id="reportPeriod">
+            <option value="Harian">Harian (Sesi Hari Ini)</option>
+            <option value="Mingguan">Mingguan</option>
+            <option value="Bulanan" selected>Bulanan</option>
+            <option value="Tahunan">Tahunan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="reportClassFilter">Filter Kelas:</label>
+          <select id="reportClassFilter">
+            <option value="Semua">Semua Kelas (7A - 9F)</option>
+            <option value="7A">Kelas 7A</option>
+            <option value="8A">Kelas 8A</option>
+            <option value="9A">Kelas 9A</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabel Laporan Rekapitulasi -->
+      <table class="attendance-table" id="reportTable">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Kelas</th>
+            <th>Nama Siswa</th>
+            <th>Waktu / Tanggal</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceLogs">
+          <tr>
+            <td>1</td>
+            <td>7A</td>
+            <td>Ahmad Dani</td>
+            <td>07:15 (05-09-2026)</td>
+            <td class="badge-hadir">Hadir</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>7A</td>
+            <td>Citra Lestari</td>
+            <td>- (05-09-2026)</td>
+            <td class="badge-alpa">Alpa</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -344,71 +348,74 @@
   const statusInstruction = document.getElementById('statusInstruction');
   const sessionDateInput = document.getElementById('sessionDate');
 
-  // 1. Inisialisasi Tanggal Otomatis ke Hari Ini
-  function initOtomatisTanggal() {
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
-    sessionDateInput.value = formattedDate;
-  }
-
-  // 2. Akses Kamera Web
-  async function setupKamera() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 400, height: 300, facingMode: "user" }
-      });
-      video.srcObject = stream;
-      statusInstruction.innerText = "Kamera siap! Arahkan wajahmu ke dalam lingkaran.";
-    } catch (err) {
-      statusInstruction.innerText = "Akses kamera gagal/ditolak.";
-      console.error(err);
+  // 1. Perpindahan Halaman Beranda & Laporan
+  function switchPage(pageName) {
+    document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
+    if (pageName === 'beranda') {
+      document.getElementById('pageBeranda').classList.add('active');
+    } else if (pageName === 'laporan') {
+      document.getElementById('pageLaporan').classList.add('active');
     }
   }
 
-  // 3. Simulasi Pemindaian Otomatis
-  function simulasiScan(isSuccess) {
-    const kelasSelected = document.getElementById('selectClass').value;
+  // 2. Tanggal Otomatis Hari Ini
+  function initTanggal() {
+    const today = new Date();
+    sessionDateInput.value = today.toISOString().split('T')[0];
+  }
 
+  // 3. Akses Kamera
+  async function setupKamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 400, height: 300 } });
+      video.srcObject = stream;
+      statusInstruction.innerText = "Kamera siap! Posisikan wajah di lingkaran.";
+    } catch (err) {
+      statusInstruction.innerText = "Akses kamera gagal/ditolak.";
+    }
+  }
+
+  // 4. Simulasi Pemindaian Wajah
+  function simulasiScan(isSuccess) {
+    const kelas = document.getElementById('selectClass').value;
     if (isSuccess) {
       faceGuide.className = "face-guide success";
       statusInstruction.innerText = "Presensi Berhasil! Selamat Belajar 🎉";
-      statusInstruction.style.color = "var(--success-color)";
-      
-      tambahLogKehadiran(kelasSelected, "Siswa Otomatis", "Hadir");
+      tambahLogKehadiran(kelas, "Siswa Otomatis", "Hadir");
     } else {
       faceGuide.className = "face-guide failed";
-      statusInstruction.innerText = "Wajah tidak cocok atau terdeteksi foto! ⚠️";
-      statusInstruction.style.color = "var(--danger-color)";
+      statusInstruction.innerText = "Wajah tidak cocok / Terdeteksi Foto! ⚠️";
     }
 
     setTimeout(() => {
       faceGuide.className = "face-guide";
-      statusInstruction.innerText = "Arahkan wajahmu ke dalam lingkaran.";
-      statusInstruction.style.color = "var(--primary-color)";
+      statusInstruction.innerText = "Posisikan wajah di lingkaran.";
     }, 3000);
   }
 
-  // 4. Input Presensi Manual / Pendaftaran Siswa
+  // 5. Input Manual Presensi Siswa
   function simpanSiswaManual() {
     const nama = document.getElementById('studentName').value.trim();
     const kelas = document.getElementById('selectClass').value;
     const status = document.getElementById('manualStatus').value;
 
-    if (nama === "") {
+    if (!nama) {
       alert("Harap masukkan nama siswa terlebih dahulu!");
       return;
     }
 
     tambahLogKehadiran(kelas, nama, status);
-    document.getElementById('studentName').value = ""; // Reset input teks
-    alert(`Data siswa ${nama} (${kelas}) berhasil dicatat sebagai [${status}]!`);
+    document.getElementById('studentName').value = "";
+    alert(`Data ${nama} (${kelas}) dicatat sebagai [${status}]!`);
   }
 
-  // 5. Fungsi Menambahkan Baris Log ke Tabel
+  // 6. Penambahan Log ke Tabel
   function tambahLogKehadiran(kelas, nama, status) {
     const tableBody = document.getElementById('attendanceLogs');
+    const rowCount = tableBody.rows.length + 1;
     const now = new Date();
-    const timeString = status === 'Hadir' ? now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+    const timeStr = status === 'Hadir' ? now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+    const dateStr = sessionDateInput.value;
 
     let badgeClass = 'badge-hadir';
     if (status === 'Izin') badgeClass = 'badge-izin';
@@ -417,22 +424,63 @@
 
     const row = document.createElement('tr');
     row.innerHTML = `
+      <td>${rowCount}</td>
       <td>${kelas}</td>
       <td>${nama}</td>
-      <td>${timeString}</td>
+      <td>${timeStr} (${dateStr})</td>
       <td class="${badgeClass}">${status}</td>
     `;
     tableBody.prepend(row);
   }
 
-  // 6. Filter Data
-  function filterData() {
-    const period = document.getElementById('filterPeriod').value;
-    console.log(`Memfilter data rekapitulasi berdasarkan: ${period}`);
+  // 7. FUNGSI UNDUH EXCEL
+  function unduhExcel() {
+    const period = document.getElementById('reportPeriod').value;
+    const filename = `E-Presensi_Kelas_SMPN_1_Monta_${period}.xlsx`;
+    
+    // Ambil Data dari Tabel
+    const table = document.getElementById('reportTable');
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Rekap Presensi" });
+    
+    XLSX.writeFile(wb, filename);
+  }
+
+  // 8. FUNGSI UNDUH PDF (Laporan Resmi Kesiswaan)
+  function unduhPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const period = document.getElementById('reportPeriod').value;
+
+    // Kops Surat SMPN 1 Monta
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("PEMERINTAH KABUPATEN BIMA", 105, 15, null, null, "center");
+    doc.text("LAPORAN REKAPITULASI PRESENSI SISWA - SMPN 1 MONTA", 105, 22, null, null, "center");
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Periode Laporan: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 28, null, null, "center");
+    doc.line(14, 32, 196, 32); // Garis Pembatas
+
+    // Generate Tabel dari DOM
+    doc.autoTable({
+      html: '#reportTable',
+      startY: 36,
+      headStyles: { fillColor: [31, 73, 125] },
+      styles: { fontSize: 9 }
+    });
+
+    // Bagian Tanda Tangan Kesiswaan
+    const finalY = doc.lastAutoTable.finalY + 15;
+    doc.text("Mengetahui,", 140, finalY);
+    doc.text("Wakasekk Bagian Kesiswaan", 140, finalY + 6);
+    doc.text("( ________________________ )", 140, finalY + 28);
+
+    doc.save(`E-Presensi_Kelas_SMPN_1_Monta_${period}.pdf`);
   }
 
   window.onload = () => {
-    initOtomatisTanggal();
+    initTanggal();
     setupKamera();
   };
 </script>
