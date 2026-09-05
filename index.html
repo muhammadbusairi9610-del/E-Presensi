@@ -99,7 +99,7 @@
       margin-bottom: 20px;
     }
 
-    /* Grid Ringkasan Jumlah Status */
+    /* Grid Ringkasan Total Keseluruhan */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -174,7 +174,7 @@
       box-sizing: border-box;
     }
 
-    /* Tabel Status Presensi */
+    /* Tabel Rekapitulasi Presensi */
     .attendance-table {
       width: 100%;
       border-collapse: collapse;
@@ -183,15 +183,17 @@
 
     .attendance-table th, .attendance-table td {
       padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
+      text-align: center;
+      border: 1px solid #e2e8f0;
       font-size: 0.85rem;
     }
 
     .attendance-table th { background-color: #f8f9fa; color: var(--primary-color); }
+    .attendance-table td.text-left { text-align: left; }
+    
     .badge-hadir { color: var(--success-color); font-weight: bold; }
-    .badge-izin { color: var(--warning-color); font-weight: bold; }
     .badge-sakit { color: var(--secondary-color); font-weight: bold; }
+    .badge-izin { color: var(--warning-color); font-weight: bold; }
     .badge-alpa { color: var(--danger-color); font-weight: bold; }
     .badge-bolos { color: var(--bolos-color); font-weight: bold; }
   </style>
@@ -214,7 +216,7 @@
   <!-- HALAMAN 1: BERANDA PRESENSI -->
   <div id="pageBeranda" class="page-section active">
     <div class="main-content">
-      <!-- Modul Pemindaian Kamera -->
+      <!-- Pemindaian Kamera -->
       <div class="card">
         <h3>Pemindaian Wajah Real-time</h3>
         <div class="camera-box">
@@ -231,11 +233,10 @@
         </div>
       </div>
 
-      <!-- Form Pengaturan Kelas, Guru, Mapel & Enrollment Siswa -->
+      <!-- Form Pengaturan Kelas, Guru, Mapel & Input Siswa -->
       <div class="card">
         <h3>Sesi Kelas & Informasi Guru</h3>
         
-        <!-- Input Nama Guru & Mata Pelajaran -->
         <div class="form-group">
           <label for="teacherName">Nama Guru Pengampu:</label>
           <input type="text" id="teacherName" placeholder="Contoh: Budi Setiawan, S.Pd.">
@@ -246,7 +247,6 @@
           <input type="text" id="subjectName" placeholder="Contoh: Matematika">
         </div>
 
-        <!-- Pilihan Kelas 7A-7F, 8A-8F, 9A-9F -->
         <div class="form-group">
           <label for="selectClass">Pilih Kelas:</label>
           <select id="selectClass">
@@ -268,7 +268,6 @@
           </select>
         </div>
 
-        <!-- Sistem Waktu & Kalender -->
         <div class="form-group">
           <label for="sessionDate">Tanggal Sesi (DD-MM-YYYY):</label>
           <input type="date" id="sessionDate">
@@ -276,7 +275,6 @@
 
         <hr style="border:0; border-top: 1px solid #eee; margin: 15px 0;">
 
-        <!-- Menu Input Nama Siswa & Status Manual -->
         <h4>Input Siswa Manual / Enrollment</h4>
         <div class="form-group">
           <label for="studentName">Nama Lengkap Siswa:</label>
@@ -287,8 +285,8 @@
           <label for="manualStatus">Status Kehadiran:</label>
           <select id="manualStatus">
             <option value="Hadir">Hadir</option>
-            <option value="Izin">Izin</option>
             <option value="Sakit">Sakit</option>
+            <option value="Izin">Izin</option>
             <option value="Alpa">Alpa</option>
             <option value="Bolos">Bolos</option>
           </select>
@@ -299,13 +297,13 @@
     </div>
   </div>
 
-  <!-- HALAMAN 2: MENU LAPORAN & REKAPITULASI (KESISWAAN) -->
+  <!-- HALAMAN 2: MENU LAPORAN & REKAPITULASI -->
   <div id="pageLaporan" class="page-section">
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
         <div>
           <h2 style="margin:0; color: var(--primary-color);">Laporan Rekapitulasi Kesiswaan</h2>
-          <p style="margin: 4px 0 0 0; color: #7f8c8d; font-size: 0.85rem;">Laporan Resmi untuk Wakasek Bagian Kesiswaan SMPN 1 Monta</p>
+          <p style="margin: 4px 0 0 0; color: #7f8c8d; font-size: 0.85rem;">Rekap Jumlah Status Kehadiran Per Nama Siswa</p>
         </div>
         <div style="display: flex; gap: 10px;">
           <button class="btn btn-success" onclick="unduhExcel()">📥 Unduh Excel</button>
@@ -313,7 +311,7 @@
         </div>
       </div>
 
-      <!-- Filter Rentang Waktu & Pilihan Kelas 7A-7F, 8A-8F, 9A-9F -->
+      <!-- Filter Kelas & Periode -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
         <div class="form-group">
           <label for="reportPeriod">Pilih Periode Laporan:</label>
@@ -347,70 +345,93 @@
         </div>
       </div>
 
-      <!-- MENU KETERANGAN JUMLAH STATUS (STAT CARDS) -->
+      <!-- RINGKASAN TOTAL SELURUH SISWA -->
       <div class="summary-grid">
         <div class="stat-card bg-hadir">
-          <h4>Hadir</h4>
+          <h4>Total Hadir</h4>
           <p id="countHadir">0</p>
         </div>
         <div class="stat-card bg-sakit">
-          <h4>Sakit</h4>
+          <h4>Total Sakit</h4>
           <p id="countSakit">0</p>
         </div>
         <div class="stat-card bg-izin">
-          <h4>Izin</h4>
+          <h4>Total Izin</h4>
           <p id="countIzin">0</p>
         </div>
         <div class="stat-card bg-alpa">
-          <h4>Alpa</h4>
+          <h4>Total Alpa</h4>
           <p id="countAlpa">0</p>
         </div>
         <div class="stat-card bg-bolos">
-          <h4>Bolos</h4>
+          <h4>Total Bolos</h4>
           <p id="countBolos">0</p>
         </div>
       </div>
 
-      <!-- Tabel Data Rekapitulasi Presensi -->
+      <!-- TABEL REKAPITULASI RINCIAN STATUS PER SISWA -->
       <table class="attendance-table" id="reportTable">
         <thead>
           <tr>
-            <th>No</th>
-            <th>Kelas</th>
-            <th>Nama Siswa</th>
-            <th>Waktu / Tanggal</th>
-            <th>Status</th>
+            <th rowspan="2">No</th>
+            <th rowspan="2">Kelas</th>
+            <th rowspan="2">Nama Siswa</th>
+            <th colspan="5">Keterangan Jumlah Status</th>
+            <th rowspan="2">Total</th>
+          </tr>
+          <tr>
+            <th style="color: var(--success-color);">Hadir</th>
+            <th style="color: var(--secondary-color);">Sakit</th>
+            <th style="color: var(--warning-color);">Izin</th>
+            <th style="color: var(--danger-color);">Alpa</th>
+            <th style="color: var(--bolos-color);">Bolos</th>
           </tr>
         </thead>
         <tbody id="attendanceLogs">
-          <!-- Sample Data Awal -->
-          <tr data-kelas="7A">
+          <!-- Data Contoh Awal -->
+          <tr data-kelas="7A" data-nama="Ahmad Dani">
             <td class="col-no">1</td>
             <td>7A</td>
-            <td>Ahmad Dani</td>
-            <td>07:15 (05-09-2026)</td>
-            <td class="badge-hadir" data-status="Hadir">Hadir</td>
+            <td class="text-left">Ahmad Dani</td>
+            <td class="val-hadir badge-hadir">12</td>
+            <td class="val-sakit badge-sakit">1</td>
+            <td class="val-izin badge-izin">0</td>
+            <td class="val-alpa badge-alpa">0</td>
+            <td class="val-bolos badge-bolos">0</td>
+            <td class="val-total" style="font-weight:bold;">13</td>
           </tr>
-          <tr data-kelas="7A">
+          <tr data-kelas="7A" data-nama="Citra Lestari">
             <td class="col-no">2</td>
             <td>7A</td>
-            <td>Citra Lestari</td>
-            <td>- (05-09-2026)</td>
-            <td class="badge-alpa" data-status="Alpa">Alpa</td>
+            <td class="text-left">Citra Lestari</td>
+            <td class="val-hadir badge-hadir">10</td>
+            <td class="val-sakit badge-sakit">0</td>
+            <td class="val-izin badge-izin">2</td>
+            <td class="val-alpa badge-alpa">1</td>
+            <td class="val-bolos badge-bolos">0</td>
+            <td class="val-total" style="font-weight:bold;">13</td>
           </tr>
-          <tr data-kelas="8B">
+          <tr data-kelas="8B" data-nama="Dewi Anggraini">
             <td class="col-no">3</td>
             <td>8B</td>
-            <td>Dewi Anggraini</td>
-            <td>07:20 (05-09-2026)</td>
-            <td class="badge-hadir" data-status="Hadir">Hadir</td>
+            <td class="text-left">Dewi Anggraini</td>
+            <td class="val-hadir badge-hadir">11</td>
+            <td class="val-sakit badge-sakit">2</td>
+            <td class="val-izin badge-izin">0</td>
+            <td class="val-alpa badge-alpa">0</td>
+            <td class="val-bolos badge-bolos">0</td>
+            <td class="val-total" style="font-weight:bold;">13</td>
           </tr>
-          <tr data-kelas="9C">
+          <tr data-kelas="9C" data-nama="Eko Prasetyo">
             <td class="col-no">4</td>
             <td>9C</td>
-            <td>Eko Prasetyo</td>
-            <td>07:10 (05-09-2026)</td>
-            <td class="badge-bolos" data-status="Bolos">Bolos</td>
+            <td class="text-left">Eko Prasetyo</td>
+            <td class="val-hadir badge-hadir">8</td>
+            <td class="val-sakit badge-sakit">0</td>
+            <td class="val-izin badge-izin">1</td>
+            <td class="val-alpa badge-alpa">2</td>
+            <td class="val-bolos badge-bolos">2</td>
+            <td class="val-total" style="font-weight:bold;">13</td>
           </tr>
         </tbody>
       </table>
@@ -424,18 +445,18 @@
   const statusInstruction = document.getElementById('statusInstruction');
   const sessionDateInput = document.getElementById('sessionDate');
 
-  // 1. Logika Perpindahan Halaman (SPA Navigation)
+  // 1. Perpindahan Halaman (SPA Navigation)
   function switchPage(pageName) {
     document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
     if (pageName === 'beranda') {
       document.getElementById('pageBeranda').classList.add('active');
     } else if (pageName === 'laporan') {
       document.getElementById('pageLaporan').classList.add('active');
-      filterTabelLaporan(); // Update filter & hitung ringkasan saat membuka laporan
+      filterTabelLaporan();
     }
   }
 
-  // 2. Penetapan Tanggal Otomatis
+  // 2. Inisialisasi Tanggal
   function initTanggal() {
     const today = new Date();
     sessionDateInput.value = today.toISOString().split('T')[0];
@@ -452,13 +473,13 @@
     }
   }
 
-  // 4. Simulasi Scan Wajah (Indikator Hijau / Merah)
+  // 4. Simulasi Scan Wajah
   function simulasiScan(isSuccess) {
     const kelas = document.getElementById('selectClass').value;
     if (isSuccess) {
       faceGuide.className = "face-guide success";
       statusInstruction.innerText = "Presensi Berhasil! Selamat Belajar 🎉";
-      tambahLogKehadiran(kelas, "Siswa Otomatis", "Hadir");
+      tambahAtauUpdateSiswa(kelas, "Siswa Otomatis", "Hadir");
     } else {
       faceGuide.className = "face-guide failed";
       statusInstruction.innerText = "Wajah tidak cocok / Terdeteksi Foto! ⚠️";
@@ -481,38 +502,65 @@
       return;
     }
 
-    tambahLogKehadiran(kelas, nama, status);
+    tambahAtauUpdateSiswa(kelas, nama, status);
     document.getElementById('studentName').value = "";
-    alert(`Data ${nama} (${kelas}) berhasil dicatat sebagai [${status}]!`);
+    alert(`Status [${status}] untuk ${nama} (${kelas}) berhasil dicatat!`);
   }
 
-  // 6. Menambahkan Baris Log Presensi
-  function tambahLogKehadiran(kelas, nama, status) {
+  // 6. Fungsi Utama: Update Rekapitulasi Rincian Status Per Siswa
+  function tambahAtauUpdateSiswa(kelas, nama, status) {
     const tableBody = document.getElementById('attendanceLogs');
-    const now = new Date();
-    const timeStr = status === 'Hadir' ? now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
-    const dateStr = sessionDateInput.value;
+    let existingRow = tableBody.querySelector(`tr[data-kelas="${kelas}"][data-nama="${nama}"]`);
 
-    let badgeClass = 'badge-hadir';
-    if (status === 'Izin') badgeClass = 'badge-izin';
-    if (status === 'Sakit') badgeClass = 'badge-sakit';
-    if (status === 'Alpa') badgeClass = 'badge-alpa';
-    if (status === 'Bolos') badgeClass = 'badge-bolos';
+    if (existingRow) {
+      // Jika siswa sudah ada di tabel, tambahkan jumlah pada status yang sesuai
+      const classMap = {
+        'Hadir': '.val-hadir',
+        'Sakit': '.val-sakit',
+        'Izin': '.val-izin',
+        'Alpa': '.val-alpa',
+        'Bolos': '.val-bolos'
+      };
+      
+      const targetTd = existingRow.querySelector(classMap[status]);
+      if (targetTd) {
+        targetTd.innerText = parseInt(targetTd.innerText) + 1;
+      }
 
-    const row = document.createElement('tr');
-    row.setAttribute('data-kelas', kelas);
-    row.innerHTML = `
-      <td class="col-no"></td>
-      <td>${kelas}</td>
-      <td>${nama}</td>
-      <td>${timeStr} (${dateStr})</td>
-      <td class="${badgeClass}" data-status="${status}">${status}</td>
-    `;
-    tableBody.prepend(row);
-    filterTabelLaporan(); // Perbarui nomor urut, filter, dan ringkasan status
+      // Update Total Pertemuan
+      const totalTd = existingRow.querySelector('.val-total');
+      totalTd.innerText = parseInt(totalTd.innerText) + 1;
+
+    } else {
+      // Jika siswa belum ada, buat baris baru
+      const row = document.createElement('tr');
+      row.setAttribute('data-kelas', kelas);
+      row.setAttribute('data-nama', nama);
+
+      const countHadir = status === 'Hadir' ? 1 : 0;
+      const countSakit = status === 'Sakit' ? 1 : 0;
+      const countIzin = status === 'Izin' ? 1 : 0;
+      const countAlpa = status === 'Alpa' ? 1 : 0;
+      const countBolos = status === 'Bolos' ? 1 : 0;
+
+      row.innerHTML = `
+        <td class="col-no"></td>
+        <td>${kelas}</td>
+        <td class="text-left">${nama}</td>
+        <td class="val-hadir badge-hadir">${countHadir}</td>
+        <td class="val-sakit badge-sakit">${countSakit}</td>
+        <td class="val-izin badge-izin">${countIzin}</td>
+        <td class="val-alpa badge-alpa">${countAlpa}</td>
+        <td class="val-bolos badge-bolos">${countBolos}</td>
+        <td class="val-total" style="font-weight:bold;">1</td>
+      `;
+      tableBody.appendChild(row);
+    }
+
+    filterTabelLaporan();
   }
 
-  // 7. Penyaringan Data Laporan Sesuai Pilihan Kelas & Periode
+  // 7. Filter Laporan Sesuai Pilihan Kelas
   function filterTabelLaporan() {
     const selectedClass = document.getElementById('reportClassFilter').value;
     const tableBody = document.getElementById('attendanceLogs');
@@ -528,44 +576,39 @@
         rows[i].style.display = 'none';
       }
     }
-    updateRingkasanStatus();
+    updateRingkasanTotalGlobal();
   }
 
-  // 8. Menghitung Jumlah Total Status (Hadir, Sakit, Izin, Alpa, Bolos)
-  function updateRingkasanStatus() {
+  // 8. Menhitung Total Akumulasi Seluruh Siswa yang Tampil
+  function updateRingkasanTotalGlobal() {
     const rows = document.querySelectorAll('#attendanceLogs tr');
-    let totalHadir = 0, totalSakit = 0, totalIzin = 0, totalAlpa = 0, totalBolos = 0;
+    let sumHadir = 0, sumSakit = 0, sumIzin = 0, sumAlpa = 0, sumBolos = 0;
 
     rows.forEach(row => {
       if (row.style.display !== 'none') {
-        const statusTd = row.querySelector('[data-status]');
-        if (statusTd) {
-          const status = statusTd.getAttribute('data-status');
-          if (status === 'Hadir') totalHadir++;
-          else if (status === 'Sakit') totalSakit++;
-          else if (status === 'Izin') totalIzin++;
-          else if (status === 'Alpa') totalAlpa++;
-          else if (status === 'Bolos') totalBolos++;
-        }
+        sumHadir += parseInt(row.querySelector('.val-hadir').innerText) || 0;
+        sumSakit += parseInt(row.querySelector('.val-sakit').innerText) || 0;
+        sumIzin += parseInt(row.querySelector('.val-izin').innerText) || 0;
+        sumAlpa += parseInt(row.querySelector('.val-alpa').innerText) || 0;
+        sumBolos += parseInt(row.querySelector('.val-bolos').innerText) || 0;
       }
     });
 
-    document.getElementById('countHadir').innerText = totalHadir;
-    document.getElementById('countSakit').innerText = totalSakit;
-    document.getElementById('countIzin').innerText = totalIzin;
-    document.getElementById('countAlpa').innerText = totalAlpa;
-    document.getElementById('countBolos').innerText = totalBolos;
+    document.getElementById('countHadir').innerText = sumHadir;
+    document.getElementById('countSakit').innerText = sumSakit;
+    document.getElementById('countIzin').innerText = sumIzin;
+    document.getElementById('countAlpa').innerText = sumAlpa;
+    document.getElementById('countBolos').innerText = sumBolos;
   }
 
-  // 9. Ekspor Laporan Ke Excel
+  // 9. Ekspor Excel
   function unduhExcel() {
     const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
-    const teacherName = document.getElementById('teacherName').value.trim() || 'Guru';
     const subjectName = document.getElementById('subjectName').value.trim() || 'Mapel';
     const labelKelas = selectedClass === 'Semua' ? 'Semua_Kelas' : `Kelas_${selectedClass}`;
     
-    const filename = `E-Presensi_SMPN_1_Monta_${labelKelas}_${subjectName}_${period}.xlsx`;
+    const filename = `Rekap_Presensi_SMPN_1_Monta_${labelKelas}_${subjectName}_${period}.xlsx`;
     
     const originalTable = document.getElementById('reportTable');
     const clonedTable = originalTable.cloneNode(true);
@@ -581,7 +624,7 @@
     XLSX.writeFile(wb, filename);
   }
 
-  // 10. Ekspor Laporan Ke PDF Resmi Kesiswaan (Dengan Nama Guru & Mapel)
+  // 10. Ekspor PDF
   function unduhPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -591,9 +634,8 @@
     const subjectName = document.getElementById('subjectName').value.trim() || 'Semua Mata Pelajaran';
     const labelKelas = selectedClass === 'Semua' ? 'Semua Kelas (7A - 9F)' : `Kelas ${selectedClass}`;
 
-    // Header Kop Surat
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.text("PEMERINTAH KABUPATEN BIMA", 105, 14, null, null, "center");
     doc.text("LAPORAN REKAPITULASI PRESENSI SISWA - SMPN 1 MONTA", 105, 20, null, null, "center");
     
@@ -603,18 +645,17 @@
     doc.text(`Target: ${labelKelas} | Periode: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 31, null, null, "center");
     doc.line(14, 34, 196, 34);
 
-    // Tabel Laporan PDF
     doc.autoTable({
       html: '#reportTable',
       startY: 38,
-      headStyles: { fillColor: [31, 73, 125] },
-      styles: { fontSize: 9 },
+      headStyles: { fillColor: [31, 73, 125], halign: 'center' },
+      styles: { fontSize: 8, halign: 'center' },
+      columnStyles: { 2: { halign: 'left' } },
       filterRow: function(row, data) {
         return row.element.style.display !== 'none';
       }
     });
 
-    // Tanda Tangan
     const finalY = doc.lastAutoTable.finalY + 15;
     doc.text("Mengetahui,", 30, finalY);
     doc.text("Wakasek Bagian Kesiswaan", 30, finalY + 6);
@@ -624,12 +665,13 @@
     doc.text(`Mapel: ${subjectName}`, 130, finalY + 6);
     doc.text(`( ${teacherName} )`, 130, finalY + 28);
 
-    doc.save(`E-Presensi_SMPN_1_Monta_${labelKelas.replace(/ /g, '_')}_${period}.pdf`);
+    doc.save(`Rekap_Presensi_SMPN_1_Monta_${labelKelas.replace(/ /g, '_')}_${period}.pdf`);
   }
 
   window.onload = () => {
     initTanggal();
     setupKamera();
+    filterTabelLaporan();
   };
 </script>
 
