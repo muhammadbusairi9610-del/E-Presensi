@@ -17,6 +17,7 @@
       --success-color: #2ecc71;
       --warning-color: #f39c12;
       --danger-color: #e74c3c;
+      --bolos-color: #8e44ad;
       --bg-color: #f4f7f6;
       --card-bg: #ffffff;
       --text-color: #2c3e50;
@@ -98,6 +99,31 @@
       margin-bottom: 20px;
     }
 
+    /* Grid Ringkasan Jumlah Status */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      padding: 12px;
+      border-radius: 10px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .stat-card h4 { margin: 0; font-size: 0.85rem; font-weight: 500; opacity: 0.9; }
+    .stat-card p { margin: 6px 0 0 0; font-size: 1.5rem; font-weight: bold; }
+
+    .bg-hadir { background-color: var(--success-color); }
+    .bg-sakit { background-color: var(--secondary-color); }
+    .bg-izin { background-color: var(--warning-color); }
+    .bg-alpa { background-color: var(--danger-color); }
+    .bg-bolos { background-color: var(--bolos-color); }
+
     /* Area Kamera & Kotak Panduan */
     .camera-box {
       position: relative;
@@ -167,6 +193,7 @@
     .badge-izin { color: var(--warning-color); font-weight: bold; }
     .badge-sakit { color: var(--secondary-color); font-weight: bold; }
     .badge-alpa { color: var(--danger-color); font-weight: bold; }
+    .badge-bolos { color: var(--bolos-color); font-weight: bold; }
   </style>
 </head>
 <body>
@@ -252,6 +279,7 @@
             <option value="Izin">Izin</option>
             <option value="Sakit">Sakit</option>
             <option value="Alpa">Alpa</option>
+            <option value="Bolos">Bolos</option>
           </select>
         </div>
 
@@ -308,6 +336,30 @@
         </div>
       </div>
 
+      <!-- MENU KETERANGAN JUMLAH STATUS (STAT CARDS) -->
+      <div class="summary-grid">
+        <div class="stat-card bg-hadir">
+          <h4>Hadir</h4>
+          <p id="countHadir">0</p>
+        </div>
+        <div class="stat-card bg-sakit">
+          <h4>Sakit</h4>
+          <p id="countSakit">0</p>
+        </div>
+        <div class="stat-card bg-izin">
+          <h4>Izin</h4>
+          <p id="countIzin">0</p>
+        </div>
+        <div class="stat-card bg-alpa">
+          <h4>Alpa</h4>
+          <p id="countAlpa">0</p>
+        </div>
+        <div class="stat-card bg-bolos">
+          <h4>Bolos</h4>
+          <p id="countBolos">0</p>
+        </div>
+      </div>
+
       <!-- Tabel Data Rekapitulasi Presensi -->
       <table class="attendance-table" id="reportTable">
         <thead>
@@ -326,28 +378,28 @@
             <td>7A</td>
             <td>Ahmad Dani</td>
             <td>07:15 (05-09-2026)</td>
-            <td class="badge-hadir">Hadir</td>
+            <td class="badge-hadir" data-status="Hadir">Hadir</td>
           </tr>
           <tr data-kelas="7A">
             <td class="col-no">2</td>
             <td>7A</td>
             <td>Citra Lestari</td>
             <td>- (05-09-2026)</td>
-            <td class="badge-alpa">Alpa</td>
+            <td class="badge-alpa" data-status="Alpa">Alpa</td>
           </tr>
           <tr data-kelas="8B">
             <td class="col-no">3</td>
             <td>8B</td>
             <td>Dewi Anggraini</td>
             <td>07:20 (05-09-2026)</td>
-            <td class="badge-hadir">Hadir</td>
+            <td class="badge-hadir" data-status="Hadir">Hadir</td>
           </tr>
           <tr data-kelas="9C">
             <td class="col-no">4</td>
             <td>9C</td>
             <td>Eko Prasetyo</td>
             <td>07:10 (05-09-2026)</td>
-            <td class="badge-hadir">Hadir</td>
+            <td class="badge-bolos" data-status="Bolos">Bolos</td>
           </tr>
         </tbody>
       </table>
@@ -368,7 +420,7 @@
       document.getElementById('pageBeranda').classList.add('active');
     } else if (pageName === 'laporan') {
       document.getElementById('pageLaporan').classList.add('active');
-      filterTabelLaporan(); // Update filter saat membuka halaman laporan
+      filterTabelLaporan(); // Update filter & hitung ringkasan saat membuka laporan
     }
   }
 
@@ -434,6 +486,7 @@
     if (status === 'Izin') badgeClass = 'badge-izin';
     if (status === 'Sakit') badgeClass = 'badge-sakit';
     if (status === 'Alpa') badgeClass = 'badge-alpa';
+    if (status === 'Bolos') badgeClass = 'badge-bolos';
 
     const row = document.createElement('tr');
     row.setAttribute('data-kelas', kelas);
@@ -442,10 +495,10 @@
       <td>${kelas}</td>
       <td>${nama}</td>
       <td>${timeStr} (${dateStr})</td>
-      <td class="${badgeClass}">${status}</td>
+      <td class="${badgeClass}" data-status="${status}">${status}</td>
     `;
     tableBody.prepend(row);
-    filterTabelLaporan(); // Perbarui nomor urut dan filter
+    filterTabelLaporan(); // Perbarui nomor urut, filter, dan ringkasan status
   }
 
   // 7. Penyaringan Data Laporan Sesuai Pilihan Kelas & Periode
@@ -464,16 +517,42 @@
         rows[i].style.display = 'none';
       }
     }
+    updateRingkasanStatus();
   }
 
-  // 8. Ekspor Laporan Ke Excel (Hanya Data Kelas Terfilter)
+  // 8. Menghitung Jumlah Total Status (Hadir, Sakit, Izin, Alpa, Bolos)
+  function updateRingkasanStatus() {
+    const rows = document.querySelectorAll('#attendanceLogs tr');
+    let totalHadir = 0, totalSakit = 0, totalIzin = 0, totalAlpa = 0, totalBolos = 0;
+
+    rows.forEach(row => {
+      if (row.style.display !== 'none') {
+        const statusTd = row.querySelector('[data-status]');
+        if (statusTd) {
+          const status = statusTd.getAttribute('data-status');
+          if (status === 'Hadir') totalHadir++;
+          else if (status === 'Sakit') totalSakit++;
+          else if (status === 'Izin') totalIzin++;
+          else if (status === 'Alpa') totalAlpa++;
+          else if (status === 'Bolos') totalBolos++;
+        }
+      }
+    });
+
+    document.getElementById('countHadir').innerText = totalHadir;
+    document.getElementById('countSakit').innerText = totalSakit;
+    document.getElementById('countIzin').innerText = totalIzin;
+    document.getElementById('countAlpa').innerText = totalAlpa;
+    document.getElementById('countBolos').innerText = totalBolos;
+  }
+
+  // 9. Ekspor Laporan Ke Excel (Hanya Data Terfilter)
   function unduhExcel() {
     const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
     const labelKelas = selectedClass === 'Semua' ? 'Semua_Kelas' : `Kelas_${selectedClass}`;
     const filename = `E-Presensi_SMPN_1_Monta_${labelKelas}_${period}.xlsx`;
     
-    // Buat salinan tabel sementara hanya dengan baris yang terlihat
     const originalTable = document.getElementById('reportTable');
     const clonedTable = originalTable.cloneNode(true);
     const rows = clonedTable.querySelectorAll('tbody tr');
@@ -488,7 +567,7 @@
     XLSX.writeFile(wb, filename);
   }
 
-  // 9. Ekspor Laporan Ke PDF Resmi Kesiswaan (Hanya Data Kelas Terfilter)
+  // 10. Ekspor Laporan Ke PDF Resmi Kesiswaan (Hanya Data Terfilter)
   function unduhPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -496,7 +575,6 @@
     const period = document.getElementById('reportPeriod').value;
     const labelKelas = selectedClass === 'Semua' ? 'Semua Kelas (7A - 9F)' : `Kelas ${selectedClass}`;
 
-    // Kop Surat Resmi SMPN 1 Monta
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text("PEMERINTAH KABUPATEN BIMA", 105, 15, null, null, "center");
@@ -507,7 +585,6 @@
     doc.text(`Target: ${labelKelas} | Periode: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 28, null, null, "center");
     doc.line(14, 32, 196, 32);
 
-    // Filter baris yang ditampilkan saja
     doc.autoTable({
       html: '#reportTable',
       startY: 36,
@@ -518,7 +595,6 @@
       }
     });
 
-    // Pengesahan Wakasek Kesiswaan
     const finalY = doc.lastAutoTable.finalY + 15;
     doc.text("Mengetahui,", 140, finalY);
     doc.text("Wakasek Bagian Kesiswaan", 140, finalY + 6);
