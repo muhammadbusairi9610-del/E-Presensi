@@ -242,6 +242,12 @@
           <input type="text" id="teacherName" placeholder="Contoh: Budi Setiawan, S.Pd.">
         </div>
 
+        <!-- REVISI: PENAMBAHAN INPUT NIP GURU -->
+        <div class="form-group">
+          <label for="teacherNip">NIP Guru:</label>
+          <input type="text" id="teacherNip" placeholder="Contoh: 19850312 201001 1 008">
+        </div>
+
         <div class="form-group">
           <label for="subjectName">Mata Pelajaran:</label>
           <input type="text" id="subjectName" placeholder="Contoh: Matematika">
@@ -303,7 +309,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
         <div>
           <h2 style="margin:0; color: var(--primary-color);">Laporan Rekapitulasi Kesiswaan</h2>
-          <p style="margin: 4px 0 0 0; color: #7f8c8d; font-size: 0.85rem;">Rekap Jumlah Status Kehadiran Per Nama Siswa</p>
+          <p style="margin: 4px 0 0 0; color: #7f8c8d; font-size: 0.85rem;">Rekap Jumlah Status Kehadiran Per Siswa (Harian, Mingguan, Bulanan, Tahunan)</p>
         </div>
         <div style="display: flex; gap: 10px;">
           <button class="btn btn-success" onclick="unduhExcel()">📥 Unduh Excel</button>
@@ -315,16 +321,16 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
         <div class="form-group">
           <label for="reportPeriod">Pilih Periode Laporan:</label>
-          <select id="reportPeriod" onchange="filterTabelLaporan()">
+          <select id="reportPeriod" onchange="renderTabelRekap()">
             <option value="Harian">Harian (Sesi Hari Ini)</option>
-            <option value="Mingguan">Mingguan</option>
-            <option value="Bulanan" selected>Bulanan</option>
-            <option value="Tahunan">Tahunan</option>
+            <option value="Mingguan">Mingguan (7 Hari Terakhir)</option>
+            <option value="Bulanan" selected>Bulanan (Bulan Ini)</option>
+            <option value="Tahunan">Tahunan (Tahun Ini)</option>
           </select>
         </div>
         <div class="form-group">
           <label for="reportClassFilter">Filter Pilihan Kelas:</label>
-          <select id="reportClassFilter" onchange="filterTabelLaporan()">
+          <select id="reportClassFilter" onchange="renderTabelRekap()">
             <option value="Semua">Semua Kelas (7A - 9F)</option>
             <optgroup label="Kelas 7">
               <option value="7A">Kelas 7A</option><option value="7B">Kelas 7B</option>
@@ -377,7 +383,7 @@
             <th rowspan="2">Kelas</th>
             <th rowspan="2">Nama Siswa</th>
             <th colspan="5">Keterangan Jumlah Status</th>
-            <th rowspan="2">Total</th>
+            <th rowspan="2">Total Pertemuan</th>
           </tr>
           <tr>
             <th style="color: var(--success-color);">Hadir</th>
@@ -388,51 +394,7 @@
           </tr>
         </thead>
         <tbody id="attendanceLogs">
-          <!-- Data Contoh Awal -->
-          <tr data-kelas="7A" data-nama="Ahmad Dani">
-            <td class="col-no">1</td>
-            <td>7A</td>
-            <td class="text-left">Ahmad Dani</td>
-            <td class="val-hadir badge-hadir">12</td>
-            <td class="val-sakit badge-sakit">1</td>
-            <td class="val-izin badge-izin">0</td>
-            <td class="val-alpa badge-alpa">0</td>
-            <td class="val-bolos badge-bolos">0</td>
-            <td class="val-total" style="font-weight:bold;">13</td>
-          </tr>
-          <tr data-kelas="7A" data-nama="Citra Lestari">
-            <td class="col-no">2</td>
-            <td>7A</td>
-            <td class="text-left">Citra Lestari</td>
-            <td class="val-hadir badge-hadir">10</td>
-            <td class="val-sakit badge-sakit">0</td>
-            <td class="val-izin badge-izin">2</td>
-            <td class="val-alpa badge-alpa">1</td>
-            <td class="val-bolos badge-bolos">0</td>
-            <td class="val-total" style="font-weight:bold;">13</td>
-          </tr>
-          <tr data-kelas="8B" data-nama="Dewi Anggraini">
-            <td class="col-no">3</td>
-            <td>8B</td>
-            <td class="text-left">Dewi Anggraini</td>
-            <td class="val-hadir badge-hadir">11</td>
-            <td class="val-sakit badge-sakit">2</td>
-            <td class="val-izin badge-izin">0</td>
-            <td class="val-alpa badge-alpa">0</td>
-            <td class="val-bolos badge-bolos">0</td>
-            <td class="val-total" style="font-weight:bold;">13</td>
-          </tr>
-          <tr data-kelas="9C" data-nama="Eko Prasetyo">
-            <td class="col-no">4</td>
-            <td>9C</td>
-            <td class="text-left">Eko Prasetyo</td>
-            <td class="val-hadir badge-hadir">8</td>
-            <td class="val-sakit badge-sakit">0</td>
-            <td class="val-izin badge-izin">1</td>
-            <td class="val-alpa badge-alpa">2</td>
-            <td class="val-bolos badge-bolos">2</td>
-            <td class="val-total" style="font-weight:bold;">13</td>
-          </tr>
+          <!-- Data Hasil Olah JavaScript -->
         </tbody>
       </table>
     </div>
@@ -445,14 +407,47 @@
   const statusInstruction = document.getElementById('statusInstruction');
   const sessionDateInput = document.getElementById('sessionDate');
 
-  // 1. Perpindahan Halaman (SPA Navigation)
+  // Asset Gambar Logo dalam Format URL/Path
+  const logoBimaUrl = 'Lambang_Kabupaten_Bima.png';
+  const logoSekolahUrl = 'LOGO SMPN 1 MONTA.jpg';
+
+  // Array Utama untuk menyimpan semua riwayat presensi
+  let presenceLogs = [
+    { nama: "Ahmad Dani", kelas: "7A", status: "Hadir", tanggal: "2026-09-05" },
+    { nama: "Ahmad Dani", kelas: "7A", status: "Sakit", tanggal: "2026-09-02" },
+    { nama: "Citra Lestari", kelas: "7A", status: "Hadir", tanggal: "2026-09-05" },
+    { nama: "Citra Lestari", kelas: "7A", status: "Izin", tanggal: "2026-09-01" },
+    { nama: "Dewi Anggraini", kelas: "8B", status: "Hadir", tanggal: "2026-09-05" },
+    { nama: "Eko Prasetyo", kelas: "9C", status: "Bolos", tanggal: "2026-09-05" }
+  ];
+
+  // Fungsi Pembantu Konversi Gambar ke Base64 Data URL
+  function getBase64ImageFromUrl(imageUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = imageUrl;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/png');
+        resolve(dataURL);
+      };
+      img.onerror = (error) => reject(error);
+    });
+  }
+
+  // 1. Navigation
   function switchPage(pageName) {
     document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
     if (pageName === 'beranda') {
       document.getElementById('pageBeranda').classList.add('active');
     } else if (pageName === 'laporan') {
       document.getElementById('pageLaporan').classList.add('active');
-      filterTabelLaporan();
+      renderTabelRekap();
     }
   }
 
@@ -479,7 +474,7 @@
     if (isSuccess) {
       faceGuide.className = "face-guide success";
       statusInstruction.innerText = "Presensi Berhasil! Selamat Belajar 🎉";
-      tambahAtauUpdateSiswa(kelas, "Siswa Otomatis", "Hadir");
+      catatPresensi(kelas, "Siswa Otomatis", "Hadir");
     } else {
       faceGuide.className = "face-guide failed";
       statusInstruction.innerText = "Wajah tidak cocok / Terdeteksi Foto! ⚠️";
@@ -491,7 +486,7 @@
     }, 3000);
   }
 
-  // 5. Simpan Data Siswa Manual / Enrollment
+  // 5. Simpan Data Siswa Manual
   function simpanSiswaManual() {
     const nama = document.getElementById('studentName').value.trim();
     const kelas = document.getElementById('selectClass').value;
@@ -502,176 +497,186 @@
       return;
     }
 
-    tambahAtauUpdateSiswa(kelas, nama, status);
+    catatPresensi(kelas, nama, status);
     document.getElementById('studentName').value = "";
     alert(`Status [${status}] untuk ${nama} (${kelas}) berhasil dicatat!`);
   }
 
-  // 6. Fungsi Utama: Update Rekapitulasi Rincian Status Per Siswa
-  function tambahAtauUpdateSiswa(kelas, nama, status) {
-    const tableBody = document.getElementById('attendanceLogs');
-    let existingRow = tableBody.querySelector(`tr[data-kelas="${kelas}"][data-nama="${nama}"]`);
-
-    if (existingRow) {
-      // Jika siswa sudah ada di tabel, tambahkan jumlah pada status yang sesuai
-      const classMap = {
-        'Hadir': '.val-hadir',
-        'Sakit': '.val-sakit',
-        'Izin': '.val-izin',
-        'Alpa': '.val-alpa',
-        'Bolos': '.val-bolos'
-      };
-      
-      const targetTd = existingRow.querySelector(classMap[status]);
-      if (targetTd) {
-        targetTd.innerText = parseInt(targetTd.innerText) + 1;
-      }
-
-      // Update Total Pertemuan
-      const totalTd = existingRow.querySelector('.val-total');
-      totalTd.innerText = parseInt(totalTd.innerText) + 1;
-
-    } else {
-      // Jika siswa belum ada, buat baris baru
-      const row = document.createElement('tr');
-      row.setAttribute('data-kelas', kelas);
-      row.setAttribute('data-nama', nama);
-
-      const countHadir = status === 'Hadir' ? 1 : 0;
-      const countSakit = status === 'Sakit' ? 1 : 0;
-      const countIzin = status === 'Izin' ? 1 : 0;
-      const countAlpa = status === 'Alpa' ? 1 : 0;
-      const countBolos = status === 'Bolos' ? 1 : 0;
-
-      row.innerHTML = `
-        <td class="col-no"></td>
-        <td>${kelas}</td>
-        <td class="text-left">${nama}</td>
-        <td class="val-hadir badge-hadir">${countHadir}</td>
-        <td class="val-sakit badge-sakit">${countSakit}</td>
-        <td class="val-izin badge-izin">${countIzin}</td>
-        <td class="val-alpa badge-alpa">${countAlpa}</td>
-        <td class="val-bolos badge-bolos">${countBolos}</td>
-        <td class="val-total" style="font-weight:bold;">1</td>
-      `;
-      tableBody.appendChild(row);
-    }
-
-    filterTabelLaporan();
+  // 6. Catat Log Presensi
+  function catatPresensi(kelas, nama, status) {
+    const tgl = sessionDateInput.value;
+    presenceLogs.push({ nama, kelas, status, tanggal: tgl });
+    renderTabelRekap();
   }
 
-  // 7. Filter Laporan Sesuai Pilihan Kelas
-  function filterTabelLaporan() {
+  // 7. Pengolahan Data & Render Rekapitulasi Berdasarkan Periode Waktu
+  function renderTabelRekap() {
     const selectedClass = document.getElementById('reportClassFilter').value;
+    const selectedPeriod = document.getElementById('reportPeriod').value;
     const tableBody = document.getElementById('attendanceLogs');
-    const rows = tableBody.getElementsByTagName('tr');
-    let nomorUrut = 1;
+    tableBody.innerHTML = '';
 
-    for (let i = 0; i < rows.length; i++) {
-      const rowKelas = rows[i].getAttribute('data-kelas');
-      if (selectedClass === 'Semua' || rowKelas === selectedClass) {
-        rows[i].style.display = '';
-        rows[i].querySelector('.col-no').innerText = nomorUrut++;
-      } else {
-        rows[i].style.display = 'none';
+    const today = new Date();
+    
+    // Filter log berdasarkan waktu & kelas
+    const filteredLogs = presenceLogs.filter(log => {
+      if (selectedClass !== 'Semua' && log.kelas !== selectedClass) return false;
+
+      const logDate = new Date(log.tanggal);
+      
+      if (selectedPeriod === 'Harian') {
+        return log.tanggal === sessionDateInput.value;
+      } else if (selectedPeriod === 'Mingguan') {
+        const diffTime = Math.abs(today - logDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 7;
+      } else if (selectedPeriod === 'Bulanan') {
+        return logDate.getMonth() === today.getMonth() && logDate.getFullYear() === today.getFullYear();
+      } else if (selectedPeriod === 'Tahunan') {
+        return logDate.getFullYear() === today.getFullYear();
       }
-    }
-    updateRingkasanTotalGlobal();
-  }
-
-  // 8. Menhitung Total Akumulasi Seluruh Siswa yang Tampil
-  function updateRingkasanTotalGlobal() {
-    const rows = document.querySelectorAll('#attendanceLogs tr');
-    let sumHadir = 0, sumSakit = 0, sumIzin = 0, sumAlpa = 0, sumBolos = 0;
-
-    rows.forEach(row => {
-      if (row.style.display !== 'none') {
-        sumHadir += parseInt(row.querySelector('.val-hadir').innerText) || 0;
-        sumSakit += parseInt(row.querySelector('.val-sakit').innerText) || 0;
-        sumIzin += parseInt(row.querySelector('.val-izin').innerText) || 0;
-        sumAlpa += parseInt(row.querySelector('.val-alpa').innerText) || 0;
-        sumBolos += parseInt(row.querySelector('.val-bolos').innerText) || 0;
-      }
+      return true;
     });
 
-    document.getElementById('countHadir').innerText = sumHadir;
-    document.getElementById('countSakit').innerText = sumSakit;
-    document.getElementById('countIzin').innerText = sumIzin;
-    document.getElementById('countAlpa').innerText = sumAlpa;
-    document.getElementById('countBolos').innerText = sumBolos;
+    // Akumulasi status per siswa
+    const rekapSiswa = {};
+    filteredLogs.forEach(log => {
+      const key = `${log.kelas}_${log.nama}`;
+      if (!rekapSiswa[key]) {
+        rekapSiswa[key] = { nama: log.nama, kelas: log.kelas, Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0, Bolos: 0, Total: 0 };
+      }
+      rekapSiswa[key][log.status]++;
+      rekapSiswa[key].Total++;
+    });
+
+    // Tampilkan data ke tabel
+    let no = 1;
+    let sumH = 0, sumS = 0, sumI = 0, sumA = 0, sumB = 0;
+
+    Object.values(rekapSiswa).forEach(s => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${no++}</td>
+        <td>${s.kelas}</td>
+        <td class="text-left">${s.nama}</td>
+        <td class="badge-hadir">${s.Hadir}</td>
+        <td class="badge-sakit">${s.Sakit}</td>
+        <td class="badge-izin">${s.Izin}</td>
+        <td class="badge-alpa">${s.Alpa}</td>
+        <td class="badge-bolos">${s.Bolos}</td>
+        <td style="font-weight:bold;">${s.Total}</td>
+      `;
+      tableBody.appendChild(row);
+
+      sumH += s.Hadir;
+      sumS += s.Sakit;
+      sumI += s.Izin;
+      sumA += s.Alpa;
+      sumB += s.Bolos;
+    });
+
+    // Update Ringkasan Total Global
+    document.getElementById('countHadir').innerText = sumH;
+    document.getElementById('countSakit').innerText = sumS;
+    document.getElementById('countIzin').innerText = sumI;
+    document.getElementById('countAlpa').innerText = sumA;
+    document.getElementById('countBolos').innerText = sumB;
   }
 
-  // 9. Ekspor Excel
+  // 8. Ekspor Excel
   function unduhExcel() {
     const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
     const subjectName = document.getElementById('subjectName').value.trim() || 'Mapel';
     const labelKelas = selectedClass === 'Semua' ? 'Semua_Kelas' : `Kelas_${selectedClass}`;
     
-    const filename = `Rekap_Presensi_SMPN_1_Monta_${labelKelas}_${subjectName}_${period}.xlsx`;
-    
-    const originalTable = document.getElementById('reportTable');
-    const clonedTable = originalTable.cloneNode(true);
-    const rows = clonedTable.querySelectorAll('tbody tr');
-    
-    rows.forEach(row => {
-      if (row.style.display === 'none') {
-        row.remove();
-      }
-    });
-
-    const wb = XLSX.utils.table_to_book(clonedTable, { sheet: "Rekap Presensi" });
+    const filename = `Rekap_Presensi_${labelKelas}_${subjectName}_${period}.xlsx`;
+    const wb = XLSX.utils.table_to_book(document.getElementById('reportTable'), { sheet: "Rekap Presensi" });
     XLSX.writeFile(wb, filename);
   }
 
-  // 10. Ekspor PDF
-  function unduhPDF() {
+  // 9. Ekspor PDF dengan NIP Guru pada Kop & Tanda Tangan
+  async function unduhPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    
     const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
     const teacherName = document.getElementById('teacherName').value.trim() || '____________________';
+    const teacherNip = document.getElementById('teacherNip').value.trim() || '____________________';
     const subjectName = document.getElementById('subjectName').value.trim() || 'Semua Mata Pelajaran';
     const labelKelas = selectedClass === 'Semua' ? 'Semua Kelas (7A - 9F)' : `Kelas ${selectedClass}`;
 
+    // Memuat Gambar Logo Kiri & Kanan
+    try {
+      const imgBimaBase64 = await getBase64ImageFromUrl(logoBimaUrl);
+      const imgSekolahBase64 = await getBase64ImageFromUrl(logoSekolahUrl);
+
+      // Logo Kab. Bima (Kiri)
+      doc.addImage(imgBimaBase64, 'PNG', 14, 8, 22, 26);
+      // Logo SMPN 1 Monta (Kanan)
+      doc.addImage(imgSekolahBase64, 'JPEG', 172, 8, 24, 24);
+    } catch (e) {
+      console.warn("Logo tidak dapat dimuat secara lokal, mencetak PDF tanpa gambar.", e);
+    }
+
+    // Teks Kop Surat Resmi Ditengah
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("PEMERINTAH KABUPATEN BIMA", 105, 12, null, null, "center");
+    doc.setFontSize(10);
+    doc.text("DINAS PENDIDIKAN, KEBUDAYAAN PEMUDA, DAN OLAHRAGA", 105, 17, null, null, "center");
     doc.setFontSize(13);
-    doc.text("PEMERINTAH KABUPATEN BIMA", 105, 14, null, null, "center");
-    doc.text("LAPORAN REKAPITULASI PRESENSI SISWA - SMPN 1 MONTA", 105, 20, null, null, "center");
+    doc.text("SMP NEGERI 1 MONTA", 105, 23, null, null, "center");
     
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Mata Pelajaran: ${subjectName} | Guru Pengampu: ${teacherName}`, 105, 26, null, null, "center");
-    doc.text(`Target: ${labelKelas} | Periode: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 31, null, null, "center");
-    doc.line(14, 34, 196, 34);
+    doc.setFontSize(8);
+    doc.text("Alamat: Jalan Raya Monta, Kabupaten Bima, Nusa Tenggara Barat", 105, 28, null, null, "center");
 
+    // Garis Kop Surat
+    doc.setLineWidth(0.8);
+    doc.line(14, 32, 196, 32);
+    doc.setLineWidth(0.2);
+    doc.line(14, 33, 196, 33);
+
+    // Judul & Keterangan Laporan
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("LAPORAN REKAPITULASI PRESENSI SISWA", 105, 40, null, null, "center");
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Mata Pelajaran: ${subjectName} | Guru: ${teacherName} (NIP: ${teacherNip})`, 105, 46, null, null, "center");
+    doc.text(`Target Kelas: ${labelKelas} | Periode: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 51, null, null, "center");
+
+    // Tabel Rekapitulasi Presensi
     doc.autoTable({
       html: '#reportTable',
-      startY: 38,
+      startY: 56,
       headStyles: { fillColor: [31, 73, 125], halign: 'center' },
       styles: { fontSize: 8, halign: 'center' },
-      columnStyles: { 2: { halign: 'left' } },
-      filterRow: function(row, data) {
-        return row.element.style.display !== 'none';
-      }
+      columnStyles: { 2: { halign: 'left' } }
     });
 
+    // Area Tanda Tangan
     const finalY = doc.lastAutoTable.finalY + 15;
     doc.text("Mengetahui,", 30, finalY);
     doc.text("Wakasek Bagian Kesiswaan", 30, finalY + 6);
     doc.text("( ________________________ )", 30, finalY + 28);
+    doc.text("NIP. ____________________", 30, finalY + 34);
 
     doc.text("Guru Pengampu / Wali Kelas,", 130, finalY);
     doc.text(`Mapel: ${subjectName}`, 130, finalY + 6);
     doc.text(`( ${teacherName} )`, 130, finalY + 28);
+    doc.text(`NIP. ${teacherNip}`, 130, finalY + 34);
 
-    doc.save(`Rekap_Presensi_SMPN_1_Monta_${labelKelas.replace(/ /g, '_')}_${period}.pdf`);
+    doc.save(`Rekap_Presensi_${labelKelas.replace(/ /g, '_')}_${period}.pdf`);
   }
 
   window.onload = () => {
     initTanggal();
     setupKamera();
-    filterTabelLaporan();
+    renderTabelRekap();
   };
 </script>
 
