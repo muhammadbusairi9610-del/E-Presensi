@@ -54,22 +54,9 @@
       gap: 15px;
     }
 
-    .brand h1 {
-      margin: 0;
-      color: var(--primary-color);
-      font-size: 1.6rem;
-    }
-
-    .brand p {
-      margin: 4px 0 0 0;
-      color: #7f8c8d;
-      font-size: 0.9rem;
-    }
-
-    .nav-buttons {
-      display: flex;
-      gap: 10px;
-    }
+    .brand h1 { margin: 0; color: var(--primary-color); font-size: 1.6rem; }
+    .brand p { margin: 4px 0 0 0; color: #7f8c8d; font-size: 0.9rem; }
+    .nav-buttons { display: flex; gap: 10px; }
 
     /* Tombol Navigasi & Aksi */
     .btn {
@@ -84,13 +71,10 @@
 
     .btn-primary { background-color: var(--primary-color); color: white; }
     .btn-primary:hover { background-color: #153256; }
-
     .btn-success { background-color: var(--success-color); color: white; }
     .btn-success:hover { background-color: #27ae60; }
-
     .btn-danger { background-color: var(--danger-color); color: white; }
     .btn-danger:hover { background-color: #c0392b; }
-
     .btn-outline { background-color: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
     .btn-outline:hover { background-color: var(--primary-color); color: white; }
 
@@ -104,9 +88,7 @@
       gap: 20px;
     }
 
-    @media (max-width: 768px) {
-      .main-content { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
 
     .card {
       background-color: var(--card-bg);
@@ -141,7 +123,6 @@
       pointer-events: none;
     }
 
-    /* Indikator Warna Hijau / Merah */
     .face-guide.success { border: 4px solid var(--success-color) !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); }
     .face-guide.failed { border: 4px solid var(--danger-color) !important; box-shadow: 0 0 20px rgba(231, 76, 60, 0.6); }
 
@@ -293,11 +274,11 @@
         </div>
       </div>
 
-      <!-- Filter Rentang Waktu & Kelas -->
+      <!-- Filter Rentang Waktu & Pilihan Kelas 7A-7F, 8A-8F, 9A-9F -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
         <div class="form-group">
           <label for="reportPeriod">Pilih Periode Laporan:</label>
-          <select id="reportPeriod">
+          <select id="reportPeriod" onchange="filterTabelLaporan()">
             <option value="Harian">Harian (Sesi Hari Ini)</option>
             <option value="Mingguan">Mingguan</option>
             <option value="Bulanan" selected>Bulanan</option>
@@ -305,12 +286,24 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="reportClassFilter">Filter Kelas:</label>
-          <select id="reportClassFilter">
+          <label for="reportClassFilter">Filter Pilihan Kelas:</label>
+          <select id="reportClassFilter" onchange="filterTabelLaporan()">
             <option value="Semua">Semua Kelas (7A - 9F)</option>
-            <option value="7A">Kelas 7A</option>
-            <option value="8A">Kelas 8A</option>
-            <option value="9A">Kelas 9A</option>
+            <optgroup label="Kelas 7">
+              <option value="7A">Kelas 7A</option><option value="7B">Kelas 7B</option>
+              <option value="7C">Kelas 7C</option><option value="7D">Kelas 7D</option>
+              <option value="7E">Kelas 7E</option><option value="7F">Kelas 7F</option>
+            </optgroup>
+            <optgroup label="Kelas 8">
+              <option value="8A">Kelas 8A</option><option value="8B">Kelas 8B</option>
+              <option value="8C">Kelas 8C</option><option value="8D">Kelas 8D</option>
+              <option value="8E">Kelas 8E</option><option value="8F">Kelas 8F</option>
+            </optgroup>
+            <optgroup label="Kelas 9">
+              <option value="9A">Kelas 9A</option><option value="9B">Kelas 9B</option>
+              <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
+              <option value="9E">Kelas 9E</option><option value="9F">Kelas 9F</option>
+            </optgroup>
           </select>
         </div>
       </div>
@@ -327,19 +320,34 @@
           </tr>
         </thead>
         <tbody id="attendanceLogs">
-          <tr>
-            <td>1</td>
+          <!-- Sample Data Awal -->
+          <tr data-kelas="7A">
+            <td class="col-no">1</td>
             <td>7A</td>
             <td>Ahmad Dani</td>
             <td>07:15 (05-09-2026)</td>
             <td class="badge-hadir">Hadir</td>
           </tr>
-          <tr>
-            <td>2</td>
+          <tr data-kelas="7A">
+            <td class="col-no">2</td>
             <td>7A</td>
             <td>Citra Lestari</td>
             <td>- (05-09-2026)</td>
             <td class="badge-alpa">Alpa</td>
+          </tr>
+          <tr data-kelas="8B">
+            <td class="col-no">3</td>
+            <td>8B</td>
+            <td>Dewi Anggraini</td>
+            <td>07:20 (05-09-2026)</td>
+            <td class="badge-hadir">Hadir</td>
+          </tr>
+          <tr data-kelas="9C">
+            <td class="col-no">4</td>
+            <td>9C</td>
+            <td>Eko Prasetyo</td>
+            <td>07:10 (05-09-2026)</td>
+            <td class="badge-hadir">Hadir</td>
           </tr>
         </tbody>
       </table>
@@ -360,6 +368,7 @@
       document.getElementById('pageBeranda').classList.add('active');
     } else if (pageName === 'laporan') {
       document.getElementById('pageLaporan').classList.add('active');
+      filterTabelLaporan(); // Update filter saat membuka halaman laporan
     }
   }
 
@@ -417,7 +426,6 @@
   // 6. Menambahkan Baris Log Presensi
   function tambahLogKehadiran(kelas, nama, status) {
     const tableBody = document.getElementById('attendanceLogs');
-    const rowCount = tableBody.rows.length + 1;
     const now = new Date();
     const timeStr = status === 'Hadir' ? now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
     const dateStr = sessionDateInput.value;
@@ -428,34 +436,67 @@
     if (status === 'Alpa') badgeClass = 'badge-alpa';
 
     const row = document.createElement('tr');
+    row.setAttribute('data-kelas', kelas);
     row.innerHTML = `
-      <td>${rowCount}</td>
+      <td class="col-no"></td>
       <td>${kelas}</td>
       <td>${nama}</td>
       <td>${timeStr} (${dateStr})</td>
       <td class="${badgeClass}">${status}</td>
     `;
     tableBody.prepend(row);
+    filterTabelLaporan(); // Perbarui nomor urut dan filter
   }
 
-  // 7. Ekspor Laporan Ke Excel (Nama File: E-Presensi Kelas SMPN 1 Monta)
+  // 7. Penyaringan Data Laporan Sesuai Pilihan Kelas & Periode
+  function filterTabelLaporan() {
+    const selectedClass = document.getElementById('reportClassFilter').value;
+    const tableBody = document.getElementById('attendanceLogs');
+    const rows = tableBody.getElementsByTagName('tr');
+    let nomorUrut = 1;
+
+    for (let i = 0; i < rows.length; i++) {
+      const rowKelas = rows[i].getAttribute('data-kelas');
+      if (selectedClass === 'Semua' || rowKelas === selectedClass) {
+        rows[i].style.display = '';
+        rows[i].querySelector('.col-no').innerText = nomorUrut++;
+      } else {
+        rows[i].style.display = 'none';
+      }
+    }
+  }
+
+  // 8. Ekspor Laporan Ke Excel (Hanya Data Kelas Terfilter)
   function unduhExcel() {
+    const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
-    const filename = `E-Presensi_Kelas_SMPN_1_Monta_${period}.xlsx`;
+    const labelKelas = selectedClass === 'Semua' ? 'Semua_Kelas' : `Kelas_${selectedClass}`;
+    const filename = `E-Presensi_SMPN_1_Monta_${labelKelas}_${period}.xlsx`;
     
-    const table = document.getElementById('reportTable');
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Rekap Presensi" });
+    // Buat salinan tabel sementara hanya dengan baris yang terlihat
+    const originalTable = document.getElementById('reportTable');
+    const clonedTable = originalTable.cloneNode(true);
+    const rows = clonedTable.querySelectorAll('tbody tr');
     
+    rows.forEach(row => {
+      if (row.style.display === 'none') {
+        row.remove();
+      }
+    });
+
+    const wb = XLSX.utils.table_to_book(clonedTable, { sheet: "Rekap Presensi" });
     XLSX.writeFile(wb, filename);
   }
 
-  // 8. Ekspor Laporan Ke PDF Resmi Kesiswaan
+  // 9. Ekspor Laporan Ke PDF Resmi Kesiswaan (Hanya Data Kelas Terfilter)
   function unduhPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
+    const labelKelas = selectedClass === 'Semua' ? 'Semua Kelas (7A - 9F)' : `Kelas ${selectedClass}`;
 
-    // Kop Surat SMPN 1 Monta
+    // Kop Surat Resmi SMPN 1 Monta
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text("PEMERINTAH KABUPATEN BIMA", 105, 15, null, null, "center");
@@ -463,15 +504,18 @@
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`Periode Laporan: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 28, null, null, "center");
+    doc.text(`Target: ${labelKelas} | Periode: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 28, null, null, "center");
     doc.line(14, 32, 196, 32);
 
-    // Buat Tabel dari Elemen HTML
+    // Filter baris yang ditampilkan saja
     doc.autoTable({
       html: '#reportTable',
       startY: 36,
       headStyles: { fillColor: [31, 73, 125] },
-      styles: { fontSize: 9 }
+      styles: { fontSize: 9 },
+      filterRow: function(row, data) {
+        return row.element.style.display !== 'none';
+      }
     });
 
     // Pengesahan Wakasek Kesiswaan
@@ -480,7 +524,7 @@
     doc.text("Wakasek Bagian Kesiswaan", 140, finalY + 6);
     doc.text("( ________________________ )", 140, finalY + 28);
 
-    doc.save(`E-Presensi_Kelas_SMPN_1_Monta_${period}.pdf`);
+    doc.save(`E-Presensi_SMPN_1_Monta_${labelKelas.replace(/ /g, '_')}_${period}.pdf`);
   }
 
   window.onload = () => {
