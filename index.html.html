@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Presensi Kelas SMP</title>
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --success-color: #2ecc71;
+      --danger-color: #e74c3c;
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-color: #2c3e50;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      text-align: center;
+      background-color: var(--card-bg);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      color: var(--primary-color);
+      font-size: 1.8rem;
+    }
+
+    p.subtitle {
+      margin: 0;
+      color: #7f8c8d;
+      font-size: 0.95rem;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Area Kamera */
+    .camera-box {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Bounding Box Wajah (Bingkai Oval) */
+    .face-guide {
+      position: absolute;
+      width: 160px;
+      height: 210px;
+      border: 4px dashed var(--primary-color);
+      border-radius: 50%;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .face-guide.success {
+      border: 4px solid var(--success-color) !important;
+      box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+    }
+
+    .face-guide.failed {
+      border: 4px solid var(--danger-color) !important;
+      box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
+    }
+
+    /* Instruksi Bahasa Indonesia */
+    .status-badge {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      background-color: #eef6fb;
+      text-align: center;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    /* Modul Kalender & Sistem Waktu */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    input[type="date"], select, button {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    /* Tabel Status Sederhana */
+    .attendance-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .attendance-table th, .attendance-table td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 0.85rem;
+    }
+
+    .badge-hadir { color: var(--success-color); font-weight: bold; }
+    .badge-alpa { color: var(--danger-color); font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>E-Presensi Kelas SMP 🚀</h1>
+    <p class="subtitle">Arahkan wajahmu ke dalam lingkaran kamera untuk presensi otomatis!</p>
+  </header>
+
+  <div class="main-content">
+    <!-- Kolom 1: Pemindaian Wajah Real-time -->
+    <div class="card">
+      <h3>Pemindaian Wajah</h3>
+      <div class="camera-box">
+        <video id="videoFeed" autoplay muted playsinline></video>
+        <div id="faceGuide" class="face-guide"></div>
+      </div>
+      <div id="statusInstruction" class="status-badge">
+        Menyiapkan kamera...
+      </div>
+      <div style="margin-top: 10px; display: flex; gap: 8px;">
+        <button onclick="simulasiScan(true)">Simulasi Sukses (Budi)</button>
+        <button onclick="simulasiScan(false)" style="background-color: var(--danger-color);">Simulasi Gagal</button>
+      </div>
+    </div>
+
+    <!-- Kolom 2: Kalender, Sesi & Filter Rekap -->
+    <div class="card">
+      <h3>Pengaturan Waktu & Sesi</h3>
+      
+      <!-- Penetapan Waktu Otomatis & Manual -->
+      <div class="form-group">
+        <label for="sessionDate">Tanggal Sesi Presensi (DD-MM-YYYY):</label>
+        <input type="date" id="sessionDate">
+      </div>
+
+      <div class="form-group">
+        <label for="filterPeriod">Filter Rekapitulasi:</label>
+        <select id="filterPeriod" onchange="filterData()">
+          <option value="harian">Harian</option>
+          <option value="mingguan">Mingguan</option>
+          <option value="bulanan">Bulanan</option>
+          <option value="tahunan">Tahunan</option>
+        </select>
+      </div>
+
+      <h4>Status Presensi Sesi Ini:</h4>
+      <table class="attendance-table">
+        <thead>
+          <tr>
+            <th>Nama Siswa</th>
+            <th>Waktu</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceLogs">
+          <tr>
+            <td>Ahmad Dani</td>
+            <td>07:15</td>
+            <td class="badge-hadir">Hadir</td>
+          </tr>
+          <tr>
+            <td>Citra Lestari</td>
+            <td>-</td>
+            <td class="badge-alpa">Alpa</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const video = document.getElementById('videoFeed');
+  const faceGuide = document.getElementById('faceGuide');
+  const statusInstruction = document.getElementById('statusInstruction');
+  const sessionDateInput = document.getElementById('sessionDate');
+
+  // 1. Mengatur Tanggal Otomatis ke Hari Ini saat Pertama Dimuat
+  function initOtomatisTanggal() {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Format YYYY-MM-DD untuk input date
+    sessionDateInput.value = formattedDate;
+  }
+
+  // 2. Inisialisasi Akses Kamera
+  async function setupKamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 400, height: 300, facingMode: "user" }
+      });
+      video.srcObject = stream;
+      statusInstruction.innerText = "Kamera siap! Arahkan wajahmu ke dalam lingkaran.";
+    } catch (err) {
+      statusInstruction.innerText = "Akses kamera gagal/ditolak.";
+      console.error(err);
+    }
+  }
+
+  // 3. Fungsi Simulasi Pemindaian (Sukses / Gagal)
+  function simulasiScan(isSuccess) {
+    if (isSuccess) {
+      faceGuide.className = "face-guide success";
+      statusInstruction.innerText = "Presensi Berhasil! Selamat Belajar, Budi Pratama 🎉";
+      statusInstruction.style.color = "var(--success-color)";
+      
+      // Tambahkan Log Baru
+      tambahLogKehadiran("Budi Pratama", "Hadir");
+    } else {
+      faceGuide.className = "face-guide failed";
+      statusInstruction.innerText = "Wajah tidak cocok atau terdeteksi foto! Coba lagi ⚠️";
+      statusInstruction.style.color = "var(--danger-color)";
+    }
+
+    // Reset Indikator Setelah 3 Detik
+    setTimeout(() => {
+      faceGuide.className = "face-guide";
+      statusInstruction.innerText = "Arahkan wajahmu ke dalam lingkaran.";
+      statusInstruction.style.color = "var(--primary-color)";
+    }, 3000);
+  }
+
+  // 4. Menambahkan Log Kehadiran ke Tabel secara Dinamis
+  function tambahLogKehadiran(nama, status) {
+    const tableBody = document.getElementById('attendanceLogs');
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${nama}</td>
+      <td>${timeString}</td>
+      <td class="badge-hadir">${status}</td>
+    `;
+    tableBody.prepend(row);
+  }
+
+  // 5. Fungsi Simulasi Filter Data
+  function filterData() {
+    const period = document.getElementById('filterPeriod').value;
+    console.log(`Menyaring data presensi berdasarkan periode: ${period}`);
+  }
+
+  // Jalankan fungsi awal saat halaman selesai dimuat
+  window.onload = () => {
+    initOtomatisTanggal();
+    setupKamera();
+  };
+</script>
+
+</body>
+</html>
