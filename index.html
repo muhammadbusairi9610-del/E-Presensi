@@ -231,10 +231,21 @@
         </div>
       </div>
 
-      <!-- Form Pengaturan Kelas, Waktu & Input Nama Siswa -->
+      <!-- Form Pengaturan Kelas, Guru, Mapel & Enrollment Siswa -->
       <div class="card">
-        <h3>Sesi Kelas & Enrollment Siswa</h3>
+        <h3>Sesi Kelas & Informasi Guru</h3>
         
+        <!-- Input Nama Guru & Mata Pelajaran -->
+        <div class="form-group">
+          <label for="teacherName">Nama Guru Pengampu:</label>
+          <input type="text" id="teacherName" placeholder="Contoh: Budi Setiawan, S.Pd.">
+        </div>
+
+        <div class="form-group">
+          <label for="subjectName">Mata Pelajaran:</label>
+          <input type="text" id="subjectName" placeholder="Contoh: Matematika">
+        </div>
+
         <!-- Pilihan Kelas 7A-7F, 8A-8F, 9A-9F -->
         <div class="form-group">
           <label for="selectClass">Pilih Kelas:</label>
@@ -257,7 +268,7 @@
           </select>
         </div>
 
-        <!-- System Waktu & Kalender -->
+        <!-- Sistem Waktu & Kalender -->
         <div class="form-group">
           <label for="sessionDate">Tanggal Sesi (DD-MM-YYYY):</label>
           <input type="date" id="sessionDate">
@@ -546,12 +557,15 @@
     document.getElementById('countBolos').innerText = totalBolos;
   }
 
-  // 9. Ekspor Laporan Ke Excel (Hanya Data Terfilter)
+  // 9. Ekspor Laporan Ke Excel
   function unduhExcel() {
     const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
+    const teacherName = document.getElementById('teacherName').value.trim() || 'Guru';
+    const subjectName = document.getElementById('subjectName').value.trim() || 'Mapel';
     const labelKelas = selectedClass === 'Semua' ? 'Semua_Kelas' : `Kelas_${selectedClass}`;
-    const filename = `E-Presensi_SMPN_1_Monta_${labelKelas}_${period}.xlsx`;
+    
+    const filename = `E-Presensi_SMPN_1_Monta_${labelKelas}_${subjectName}_${period}.xlsx`;
     
     const originalTable = document.getElementById('reportTable');
     const clonedTable = originalTable.cloneNode(true);
@@ -567,27 +581,32 @@
     XLSX.writeFile(wb, filename);
   }
 
-  // 10. Ekspor Laporan Ke PDF Resmi Kesiswaan (Hanya Data Terfilter)
+  // 10. Ekspor Laporan Ke PDF Resmi Kesiswaan (Dengan Nama Guru & Mapel)
   function unduhPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const selectedClass = document.getElementById('reportClassFilter').value;
     const period = document.getElementById('reportPeriod').value;
+    const teacherName = document.getElementById('teacherName').value.trim() || '____________________';
+    const subjectName = document.getElementById('subjectName').value.trim() || 'Semua Mata Pelajaran';
     const labelKelas = selectedClass === 'Semua' ? 'Semua Kelas (7A - 9F)' : `Kelas ${selectedClass}`;
 
+    // Header Kop Surat
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text("PEMERINTAH KABUPATEN BIMA", 105, 15, null, null, "center");
-    doc.text("LAPORAN REKAPITULASI PRESENSI SISWA - SMPN 1 MONTA", 105, 22, null, null, "center");
+    doc.text("PEMERINTAH KABUPATEN BIMA", 105, 14, null, null, "center");
+    doc.text("LAPORAN REKAPITULASI PRESENSI SISWA - SMPN 1 MONTA", 105, 20, null, null, "center");
     
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Target: ${labelKelas} | Periode: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 28, null, null, "center");
-    doc.line(14, 32, 196, 32);
+    doc.setFontSize(9);
+    doc.text(`Mata Pelajaran: ${subjectName} | Guru Pengampu: ${teacherName}`, 105, 26, null, null, "center");
+    doc.text(`Target: ${labelKelas} | Periode: ${period} | Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 31, null, null, "center");
+    doc.line(14, 34, 196, 34);
 
+    // Tabel Laporan PDF
     doc.autoTable({
       html: '#reportTable',
-      startY: 36,
+      startY: 38,
       headStyles: { fillColor: [31, 73, 125] },
       styles: { fontSize: 9 },
       filterRow: function(row, data) {
@@ -595,10 +614,15 @@
       }
     });
 
+    // Tanda Tangan
     const finalY = doc.lastAutoTable.finalY + 15;
-    doc.text("Mengetahui,", 140, finalY);
-    doc.text("Wakasek Bagian Kesiswaan", 140, finalY + 6);
-    doc.text("( ________________________ )", 140, finalY + 28);
+    doc.text("Mengetahui,", 30, finalY);
+    doc.text("Wakasek Bagian Kesiswaan", 30, finalY + 6);
+    doc.text("( ________________________ )", 30, finalY + 28);
+
+    doc.text("Guru Pengampu / Wali Kelas,", 130, finalY);
+    doc.text(`Mapel: ${subjectName}`, 130, finalY + 6);
+    doc.text(`( ${teacherName} )`, 130, finalY + 28);
 
     doc.save(`E-Presensi_SMPN_1_Monta_${labelKelas.replace(/ /g, '_')}_${period}.pdf`);
   }
