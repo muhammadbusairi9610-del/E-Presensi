@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- REVISI: Judul Tab Browser -->
   <title>E-Presensi Peserta Didik SMPN 1 Monta</title>
   
   <!-- Pustaka Ekspor Excel & PDF -->
@@ -205,7 +204,6 @@
   <!-- HEADER & TOMBOL NAVIGASI -->
   <header>
     <div class="brand">
-      <!-- REVISI: Judul Utama Beranda -->
       <h1>E-Presensi Peserta Didik SMPN 1 Monta 🚀</h1>
       <p>Sistem Pengenalan Wajah & Rekapitulasi Kesiswaan</p>
     </div>
@@ -376,7 +374,7 @@
         </div>
       </div>
 
-      <!-- TABEL REKAPITULASI RINCIAN STATUS PER SISWA -->
+      <!-- TABEL REKAPITULASI RINCIAN STATUS PER SISWA (REVISI: KOLOM TOTAL PERTEMUAN DIHAPUS) -->
       <table class="attendance-table" id="reportTable">
         <thead>
           <tr>
@@ -384,7 +382,6 @@
             <th rowspan="2">Kelas</th>
             <th rowspan="2">Nama Siswa</th>
             <th colspan="5">Keterangan Jumlah Status</th>
-            <th rowspan="2">Total Pertemuan</th>
           </tr>
           <tr>
             <th style="color: var(--success-color);">Hadir</th>
@@ -544,13 +541,12 @@
     filteredLogs.forEach(log => {
       const key = `${log.kelas}_${log.nama}`;
       if (!rekapSiswa[key]) {
-        rekapSiswa[key] = { nama: log.nama, kelas: log.kelas, Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0, Bolos: 0, Total: 0 };
+        rekapSiswa[key] = { nama: log.nama, kelas: log.kelas, Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0, Bolos: 0 };
       }
       rekapSiswa[key][log.status]++;
-      rekapSiswa[key].Total++;
     });
 
-    // Tampilkan data ke tabel
+    // Tampilkan data ke tabel (REVISI: Menghapus sel total pertemuan)
     let no = 1;
     let sumH = 0, sumS = 0, sumI = 0, sumA = 0, sumB = 0;
 
@@ -565,7 +561,6 @@
         <td class="badge-izin">${s.Izin}</td>
         <td class="badge-alpa">${s.Alpa}</td>
         <td class="badge-bolos">${s.Bolos}</td>
-        <td style="font-weight:bold;">${s.Total}</td>
       `;
       tableBody.appendChild(row);
 
@@ -596,7 +591,7 @@
     XLSX.writeFile(wb, filename);
   }
 
-  // 9. Ekspor PDF dengan NIP Guru pada Kop & Tanda Tangan
+  // 9. Ekspor PDF
   async function unduhPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -613,9 +608,7 @@
       const imgBimaBase64 = await getBase64ImageFromUrl(logoBimaUrl);
       const imgSekolahBase64 = await getBase64ImageFromUrl(logoSekolahUrl);
 
-      // Logo Kab. Bima (Kiri)
       doc.addImage(imgBimaBase64, 'PNG', 14, 8, 22, 26);
-      // Logo SMPN 1 Monta (Kanan)
       doc.addImage(imgSekolahBase64, 'JPEG', 172, 8, 24, 24);
     } catch (e) {
       console.warn("Logo tidak dapat dimuat secara lokal, mencetak PDF tanpa gambar.", e);
